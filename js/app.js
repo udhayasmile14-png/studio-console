@@ -1,183 +1,158 @@
 /**
- * Studio Console - Main Router & Application Controller
- * Handles sidebar rendering, route switching go(id, tabIndex), and dashboard view home().
+ * Studio Console - Central Multi-Page Application Shell Controller
+ * Provides renderShell(), topbar customization, sidebar link navigation, drawer toggles, and modals.
  */
 
-// Application Navigation State
-var currentView = {
-  moduleId: 'dashboard',
-  tabIndex: 0
-};
+// Navigation Items Configuration
+var NAV_ITEMS = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'ti-smart-home', href: 'index.html' },
+  { id: 'photo-sharing', label: 'Photo Sharing', icon: 'ti-photo', href: 'photo-sharing.html', badge: { text: '12', bg: '#F7EBD2', color: '#7A5514' } },
+  { id: 'albums', label: 'Album Design', icon: 'ti-book', href: 'albums.html', badge: { text: '1', bg: '#F8E3E8', color: '#993556' } },
+  { id: 'pay', label: 'Packages & Pay', icon: 'ti-receipt', href: 'packages-pay.html', badge: { text: '2', bg: '#FBEBCF', color: '#8A5A0B' } },
+  { id: 'clients', label: 'Clients & Data', icon: 'ti-users', href: 'clients.html' },
+  { id: 'animation-video', label: 'Animation Video', icon: 'ti-video', href: 'animation-video.html' },
+  { id: 'digital-invitation', label: 'Digital Invitation', icon: 'ti-mail-heart', href: 'digital-invitation.html' },
+  { id: 'team', label: 'Team', icon: 'ti-user-check', href: 'team.html' },
+  { id: 'settings', label: 'Settings', icon: 'ti-settings', href: 'settings.html' }
+];
 
 /**
- * Render the Dashboard view HTML string.
- * @returns {string} HTML string
+ * Render shared Shell layout (Sidebar and Topbar)
+ * @param {Object} options
+ * @param {string} options.active - Active navigation ID
+ * @param {string|null} [options.searchPlaceholder] - Search placeholder or null to hide
+ * @param {Array} [options.actions] - Array of action button specs: [{ label, icon, variant, onclick }]
  */
-function home() {
-  var upcomingEvents = [
-    { title: 'Aarav and Meera wedding', sub: '14 Feb, Chennai', chip: 'Gallery ready', kind: 'ok' },
-    { title: 'Kavya birthday shoot', sub: '16 Feb, Coimbatore', chip: 'Balance due', kind: 'warn' },
-    { title: 'Nexa annual meet', sub: '19 Feb, Bengaluru', chip: 'Quote sent', kind: 'info' },
-    { title: 'Rahul and Divya reception', sub: '22 Feb, Madurai', chip: 'Advance unpaid', kind: 'err' }
-  ];
+function renderShell(options) {
+  options = options || {};
+  var activeId = options.active || 'dashboard';
 
-  var needsAttention = [
-    { title: '12 unmatched photos', sub: 'Review in Photo sharing', targetMod: 'photos', targetTab: 2 },
-    { title: 'Album waiting for approval', sub: 'Sent to client 3 days ago', targetMod: 'albums', targetTab: 2 },
-    { title: 'Video render failed', sub: 'Retry from the render queue', targetMod: 'video', targetTab: 2 }
-  ];
+  // 1. Render Sidebar Navigation Links
+  var navEl = document.getElementById('sidebar-nav');
+  if (navEl) {
+    navEl.innerHTML = NAV_ITEMS.map(function(item) {
+      var isActive = (
+        item.id === activeId ||
+        item.href === activeId ||
+        (item.href && item.href.replace('.html', '') === activeId) ||
+        (item.id === 'pay' && activeId === 'invoices') ||
+        (item.id === 'albums' && activeId === 'album-design') ||
+        (item.id === 'clients' && (activeId === 'clients-data' || activeId === 'clients'))
+      );
+      var activeClass = isActive ? ' active' : '';
+      var badgeHtml = item.badge ? '<span class="badge" style="background:' + item.badge.bg + '; color:' + item.badge.color + ';">' + item.badge.text + '</span>' : '';
+      
+      return '<a href="' + item.href + '" class="nav-item' + activeClass + '">' +
+        '<div class="nav-item-left">' +
+          '<div class="nav-item-icon"><i class="ti ' + item.icon + '"></i></div>' +
+          '<span>' + item.label + '</span>' +
+        '</div>' +
+        badgeHtml +
+      '</a>';
+    }).join('');
+  }
 
-  var eventsHtml = upcomingEvents.map(function(e) {
-    return li(e.title, e.sub, e.chip, e.kind);
-  }).join('');
+  // 2. Render Page-Specific Topbar (Search Box)
+  var searchBoxEl = document.getElementById('topbarSearch');
+  if (searchBoxEl) {
+    if (options.searchPlaceholder) {
+      searchBoxEl.hidden = false;
+      searchBoxEl.style.display = 'block';
+      var input = searchBoxEl.querySelector('input');
+      if (input) {
+        input.placeholder = options.searchPlaceholder;
+      }
+    } else {
+      searchBoxEl.hidden = true;
+      searchBoxEl.style.display = 'none';
+    }
+  }
 
-  var attentionHtml = needsAttention.map(function(item) {
-    return '<div class="dash-list-item" style="cursor: pointer;" onclick="go(\'' + item.targetMod + '\', ' + item.targetTab + ')">' +
-      '<div class="dash-item-left">' +
-        '<span class="dash-item-title">' + item.title + '</span>' +
-        '<span class="dash-item-sub">' + item.sub + '</span>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+  // 3. Render Page-Specific Topbar (Action Buttons)
+  var actionsEl = document.getElementById('topbarActions');
+  if (actionsEl) {
+    actionsEl.innerHTML = '';
+    if (options.actions && options.actions.length > 0) {
+      options.actions.forEach(function(act) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = (act.variant === 'ghost' ? 'btn-ghost' : 'btn-gold');
+        if (act.onclick) btn.setAttribute('onclick', act.onclick);
+        
+        var iconHtml = act.icon ? '<i class="ti ' + act.icon + '"></i> ' : '';
+        btn.innerHTML = iconHtml + act.label;
+        actionsEl.appendChild(btn);
+      });
+    }
+  }
 
-  var moduleCardsHtml = M.map(function(mod) {
-    return '<div class="module-card" style="--card-color: ' + mod.color + ';" onclick="go(\'' + mod.id + '\', 0)" tabIndex="0" role="button">' +
-      '<div class="module-card-title">' + mod.name + '</div>' +
-      '<div class="module-card-desc">' + mod.desc + '</div>' +
-    '</div>';
-  }).join('');
+  // Close drawer if open
+  closeDrawer();
+}
 
-  return '<div>' +
-    '<h1>Good morning</h1>' +
-    '<p class="subtitle">Three events this week. Two payments are waiting.</p>' +
-    '<div class="dash-grid">' +
-      '<div class="panel">' +
-        '<h2>Upcoming events</h2>' +
-        '<div class="dash-list">' + eventsHtml + '</div>' +
-      '</div>' +
-      '<div class="panel">' +
-        '<h2>Needs attention</h2>' +
-        '<div class="dash-list">' + attentionHtml + '</div>' +
-      '</div>' +
+/* Mobile Drawer Controls */
+function toggleDrawer() {
+  var col = document.getElementById('sidebarCol');
+  if (col) col.classList.toggle('open');
+}
+
+function closeDrawer() {
+  var col = document.getElementById('sidebarCol');
+  if (col) col.classList.remove('open');
+}
+
+/* Toast Notifications */
+function toast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.className = 'toast-msg';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() {
+    t.classList.remove('show');
+  }, 3000);
+}
+
+/* Modal Helpers */
+function openModal(id) {
+  var m = document.getElementById(id);
+  if (m) m.classList.add('show');
+}
+
+function closeModal(id) {
+  var m = document.getElementById(id);
+  if (m) m.classList.remove('show');
+}
+
+/* Helper to render empty states */
+function renderEmptyState(title, desc, icon) {
+  return '<div class="glass-card" style="padding: 48px 24px; text-align: center; margin-top: 20px;">' +
+    '<div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(212,168,87,0.15); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 14px;">' +
+      '<i class="ti ' + (icon || 'ti-inbox') + '"></i>' +
     '</div>' +
-    '<div style="margin-top: 28px;">' +
-      '<h2 style="margin-bottom: 14px;">Studio Modules</h2>' +
-      '<div class="module-cards-grid">' + moduleCardsHtml + '</div>' +
-    '</div>' +
+    '<h3 style="font-size: 1.3rem; margin-bottom: 6px;">' + title + '</h3>' +
+    '<p style="color: var(--muted); font-size: 14px; max-width: 360px; margin: 0 auto;">' + desc + '</p>' +
   '</div>';
 }
 
-/**
- * Navigation Router Function
- * @param {string} id Module ID or 'dashboard'
- * @param {number} [tabIndex] Screen tab index (0-based)
- */
-function go(id, tabIndex) {
-  var tIdx = typeof tabIndex === 'number' ? tabIndex : 0;
-  var isModuleChange = (currentView.moduleId !== id);
-
-  currentView.moduleId = id;
-  currentView.tabIndex = tIdx;
-
-  if (isModuleChange) {
-    window.scrollTo(0, 0);
+/* Helper to render skeleton loading state */
+function renderSkeletonList(count) {
+  count = count || 3;
+  var items = [];
+  for (var i = 0; i < count; i++) {
+    items.push(
+      '<div class="glass-panel" style="padding: 16px; margin-bottom: 12px; display: flex; gap: 16px; align-items: center;">' +
+        '<div class="skeleton" style="width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;"></div>' +
+        '<div style="flex: 1;">' +
+          '<div class="skeleton" style="width: 40%; height: 16px; margin-bottom: 8px;"></div>' +
+          '<div class="skeleton" style="width: 65%; height: 12px;"></div>' +
+        '</div>' +
+      '</div>'
+    );
   }
-
-  renderSidebarNav();
-  renderMainContent();
+  return items.join('');
 }
-
-/**
- * Re-renders only the current active screen content without changing scroll position.
- */
-function renderActiveScreen() {
-  renderMainContent();
-}
-
-/**
- * Render the sidebar navigation items.
- */
-function renderSidebarNav() {
-  var navContainer = document.getElementById('sidebar-nav');
-  if (!navContainer) return;
-
-  var isDashActive = (currentView.moduleId === 'dashboard');
-  var dashAria = isDashActive ? 'aria-current="page"' : '';
-  
-  var html = '<ul class="nav-list">' +
-    '<li class="nav-item">' +
-      '<button type="button" ' + dashAria + ' onclick="go(\'dashboard\')">' +
-        '<span class="nav-dot" style="background-color: #14171F;"></span>' +
-        'Dashboard' +
-      '</button>' +
-    '</li>' +
-    '<li class="nav-divider"></li>';
-
-  M.forEach(function(mod) {
-    var isActive = (currentView.moduleId === mod.id);
-    var ariaAttr = isActive ? 'aria-current="page"' : '';
-    html += '<li class="nav-item">' +
-      '<button type="button" ' + ariaAttr + ' onclick="go(\'' + mod.id + '\', 0)">' +
-        '<span class="nav-dot" style="background-color: ' + mod.color + ';"></span>' +
-        mod.name +
-      '</button>' +
-    '</li>';
-  });
-
-  html += '</ul>';
-  navContainer.innerHTML = html;
-}
-
-/**
- * Render main area content (Dashboard or active Module Screen).
- */
-function renderMainContent() {
-  var mainEl = document.getElementById('main-content');
-  if (!mainEl) return;
-
-  if (currentView.moduleId === 'dashboard') {
-    mainEl.style.setProperty('--c', 'var(--gold)');
-    mainEl.innerHTML = home();
-    return;
-  }
-
-  // Find module in config array M
-  var mod = M.find(function(m) { return m.id === currentView.moduleId; });
-  if (!mod) {
-    go('dashboard');
-    return;
-  }
-
-  // Set CSS variable --c for accent color styling
-  mainEl.style.setProperty('--c', mod.color);
-
-  // Build Tab Bar HTML
-  var tabsHtml = mod.tabs.map(function(tabName, idx) {
-    var activeClass = (idx === currentView.tabIndex) ? ' active' : '';
-    return '<button type="button" class="tab-btn' + activeClass + '" onclick="go(\'' + mod.id + '\', ' + idx + ')">' +
-      tabName +
-    '</button>';
-  }).join('');
-
-  // Get active screen HTML from registry R
-  var screenFn = (R[mod.id] && R[mod.id][currentView.tabIndex]) ? R[mod.id][currentView.tabIndex] : function() { return '<div>Screen not found</div>'; };
-  var screenContentHtml = screenFn();
-
-  var modulePageHtml = '<div class="module-header">' +
-    '<h1>' + mod.name + '</h1>' +
-    '<p class="subtitle">' + mod.desc + '</p>' +
-    '<div class="action-row">' +
-      '<button type="button" class="btn" onclick="toast(\'' + mod.action + '\')">' + mod.action + '</button>' +
-      '<button type="button" class="ghost" onclick="toast(\'Showing all items\')">View all</button>' +
-    '</div>' +
-    '<div class="tab-bar">' + tabsHtml + '</div>' +
-  '</div>' +
-  '<div class="module-screen">' + screenContentHtml + '</div>';
-
-  mainEl.innerHTML = modulePageHtml;
-}
-
-// Global initialization when window loads
-window.addEventListener('DOMContentLoaded', function() {
-  go('dashboard');
-});

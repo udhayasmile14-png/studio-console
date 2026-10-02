@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Sharing | Studio Console</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Authentication Guard -->
+  <script src="js/auth.js"></script>
+  <script>requireAuth();</script>
+
+  <style>
+    .phone-mockup {
+      width: 320px;
+      margin: 0 auto;
+      background: #14171F;
+      border: 10px solid #2B2F3E;
+      border-radius: 36px;
+      padding: 16px;
+      color: #FFF;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-shell">
+    
+    <!-- Floating Card Sidebar Column -->
+    <aside class="sidebar-column" id="sidebarCol">
+      <div class="side">
+        <div class="side-brand">
+          <div class="side-brand-icon"><i class="ti ti-camera"></i></div>
+          <span class="side-brand-name">Studio Console</span>
+        </div>
+        <nav class="side-nav" id="sidebar-nav" aria-label="Main Navigation"></nav>
+        <div class="side-user">
+          <div class="side-user-info">
+            <div class="side-user-avatar">S</div>
+            <div>
+              <div style="font-weight: 600; font-size: 13px;">Sana</div>
+              <div style="font-size: 11px; color: var(--muted);">Owner</div>
+            </div>
+          </div>
+          <button type="button" class="lnk" onclick="logout()" title="Sign Out" style="color: var(--error);">
+            <i class="ti ti-logout" style="font-size: 18px;"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Body -->
+    <main class="app-main">
+      
+      <!-- Topbar Header -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button type="button" class="menu-drawer-toggle" onclick="toggleDrawer()" aria-label="Toggle Navigation">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          <div class="topbar-search" id="topbarSearch">
+            <i class="ti ti-search"></i>
+            <input type="text" placeholder="Search galleries..." aria-label="Search">
+          </div>
+        </div>
+        <div class="topbar-actions" id="topbarActions"></div>
+      </header>
+
+      <!-- Main Photo Sharing View -->
+      <div id="main-content">
+        <div style="margin-bottom: 20px;">
+          <h1>AI Photo Sharing & Guest Galleries</h1>
+          <p style="color: var(--muted); font-size: 14px; margin-top: 4px;">Selfie-based face recognition for instant guest photo discovery.</p>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tab-bar">
+          <button type="button" class="tab-btn active" onclick="switchPhotoTab('setup', this)">Gallery Setup</button>
+          <button type="button" class="tab-btn" onclick="switchPhotoTab('guest', this)">Guest View</button>
+          <button type="button" class="tab-btn" onclick="switchPhotoTab('report', this)">Delivery Report</button>
+        </div>
+
+        <!-- TAB 1: GALLERY SETUP -->
+        <div id="tabSetup" class="tab-content">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            
+            <!-- Drag & Drop Upload Zone -->
+            <div class="glass-card" style="padding: 20px;">
+              <h3 style="font-size: 1.3rem; margin-bottom: 14px;">Upload Event Photos</h3>
+              
+              <div style="border: 2px dashed var(--line); border-radius: 14px; padding: 32px 16px; text-align: center; background: rgba(255,255,255,0.5); cursor: pointer; margin-bottom: 16px;" onclick="toast('Select files to upload')">
+                <i class="ti ti-cloud-upload" style="font-size: 36px; color: var(--gold); display: block; margin-bottom: 8px;"></i>
+                <div style="font-weight: 600; font-size: 14px;">Drag & Drop High-Res Photos Here</div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">Supports RAW, JPG, PNG (Max 50MB per file)</div>
+              </div>
+
+              <!-- Upload Progress List -->
+              <div style="font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px;">Recent Uploads</div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="glass-panel" style="padding: 10px; font-size: 13px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span>wedding_ceremony_01.raw</span>
+                    <span style="color: var(--success); font-weight: 600;">100%</span>
+                  </div>
+                  <div style="width: 100%; height: 4px; background: rgba(20,23,31,0.08); border-radius: 999px; overflow: hidden;">
+                    <div style="width: 100%; height: 100%; background: var(--success);"></div>
+                  </div>
+                </div>
+
+                <div class="glass-panel" style="padding: 10px; font-size: 13px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span>sangeet_dance_04.jpg</span>
+                    <span style="color: var(--gold); font-weight: 600;">75%</span>
+                  </div>
+                  <div style="width: 100%; height: 4px; background: rgba(20,23,31,0.08); border-radius: 999px; overflow: hidden;">
+                    <div style="width: 75%; height: 100%; background: var(--gold);"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gallery Settings Card -->
+            <div class="glass-card" style="padding: 20px;">
+              <h3 style="font-size: 1.3rem; margin-bottom: 14px;">Gallery Settings</h3>
+
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div>
+                  <label style="font-size: 12px; font-weight: 600; color: var(--muted);">Shareable Link</label>
+                  <div style="display: flex; gap: 8px; margin-top: 4px;">
+                    <input type="text" value="https://studioconsole.in/g/aarav-meera" readonly style="font-size: 12px;">
+                    <button type="button" class="btn-ghost" style="padding: 8px 12px; font-size: 12px;" onclick="toast('Link copied to clipboard!')">Copy</button>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 10px;">
+                  <div style="width: 48px; height: 48px; background: var(--ink); color: var(--gold); display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 24px;">
+                    <i class="ti ti-qrcode"></i>
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 13px;">Event QR Code</div>
+                    <div style="font-size: 11px; color: var(--muted);">Display at event venue for guests</div>
+                  </div>
+                  <button type="button" class="btn-ghost" style="padding: 6px 10px; font-size: 12px;" onclick="toast('Downloading venue QR code')">Download</button>
+                </div>
+
+                <div>
+                  <label style="font-size: 12px; font-weight: 600; color: var(--muted);">Download Permissions</label>
+                  <select style="font-size: 13px; margin-top: 4px;">
+                    <option>All Guests (Selfie AI Match)</option>
+                    <option>Password Protected</option>
+                    <option>Registered Guests Only</option>
+                  </select>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 600;">Watermark Preview</div>
+                    <div style="font-size: 11px; color: var(--muted);">Apply studio logo on downloads</div>
+                  </div>
+                  <input type="checkbox" checked style="width: 18px; height: 18px;">
+                </div>
+
+                <button type="button" class="btn-gold" style="width: 100%; margin-top: 8px;" onclick="toast('Gallery published live!')">Publish Gallery Live</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB 2: GUEST VIEW MOCKUP -->
+        <div id="tabGuest" class="tab-content" style="display: none;">
+          <div class="glass-card" style="padding: 24px; text-align: center;">
+            <h3 style="font-size: 1.4rem; margin-bottom: 6px;">Guest Mobile Experience Preview</h3>
+            <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">This is how guests view the gallery on their phones after scanning the QR code.</p>
+
+            <div class="phone-mockup">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gold); margin-bottom: 4px;">Aarav & Meera Wedding</div>
+              <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; margin: 0 0 16px 0;">Find Your Photos</h4>
+
+              <div style="background: rgba(255,255,255,0.1); border: 1px dashed rgba(255,255,255,0.3); border-radius: 14px; padding: 20px 10px; margin-bottom: 16px; cursor: pointer;" onclick="toast('Selfie camera triggered in preview')">
+                <i class="ti ti-camera-selfie" style="font-size: 32px; color: var(--gold); display: block; margin-bottom: 6px;"></i>
+                <div style="font-size: 12px; font-weight: 600;">Take a Selfie</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px;">AI matches your face instantly</div>
+              </div>
+
+              <div style="font-size: 11px; text-align: left; color: rgba(255,255,255,0.7); margin-bottom: 8px;">Matched Photos (12)</div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                <div style="height: 70px; background: linear-gradient(135deg, #A8C3E0, #A9BFA0); border-radius: 6px;"></div>
+                <div style="height: 70px; background: linear-gradient(135deg, #D9A5B2, #E0B955); border-radius: 6px;"></div>
+                <div style="height: 70px; background: linear-gradient(135deg, #B9A8E8, #A8C3E0); border-radius: 6px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: DELIVERY REPORT -->
+        <div id="tabReport" class="tab-content" style="display: none;">
+          <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="glass-panel" style="padding: 16px;">
+              <div class="stat-card-title"><span>Total Gallery Views</span><i class="ti ti-eye"></i></div>
+              <div class="stat-card-val">4,820</div>
+            </div>
+            <div class="glass-panel" style="padding: 16px;">
+              <div class="stat-card-title"><span>Selfie Searches</span><i class="ti ti-camera-selfie"></i></div>
+              <div class="stat-card-val">1,240</div>
+            </div>
+            <div class="glass-panel" style="padding: 16px;">
+              <div class="stat-card-title"><span>Photo Downloads</span><i class="ti ti-download"></i></div>
+              <div class="stat-card-val">3,150</div>
+            </div>
+          </div>
+
+          <div class="glass-card" style="padding: 20px;">
+            <h3 style="font-size: 1.3rem; margin-bottom: 14px;">Recent Guest Activity Log</h3>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Guest / IP</th>
+                    <th>Selfie Status</th>
+                    <th>Photos Matched</th>
+                    <th>Downloads</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight: 600;">Meera (Bride)</td>
+                    <td><span class="badge badge-approved">Matched</span></td>
+                    <td>45 Photos</td>
+                    <td>45 Downloads</td>
+                    <td>10 mins ago</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight: 600;">Guest (157.48.xxx)</td>
+                    <td><span class="badge badge-approved">Matched</span></td>
+                    <td>12 Photos</td>
+                    <td>8 Downloads</td>
+                    <td>25 mins ago</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight: 600;">Guest (106.20.xxx)</td>
+                    <td><span class="badge badge-approved">Matched</span></td>
+                    <td>8 Photos</td>
+                    <td>4 Downloads</td>
+                    <td>1 hour ago</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- BELOW TABS: YOUR GALLERIES LIST -->
+        <div class="glass-card" style="padding: 20px; margin-top: 24px;">
+          <h3 style="font-size: 1.3rem; margin-bottom: 14px;">Your Event Galleries</h3>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Event Gallery Title</th>
+                  <th>Date</th>
+                  <th>Photo Count</th>
+                  <th>Storage</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="galleriesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Create Gallery Modal -->
+  <div class="modal-overlay" id="createGalleryModal" onclick="if(event.target===this)closeModal('createGalleryModal')">
+    <div class="glass-card modal-card">
+      <h2 style="margin-bottom: 6px;">Create Event Gallery</h2>
+      <p style="color: var(--muted); font-size: 13px; margin: 0 0 18px 0;">Initialize an AI selfie-sharing gallery for an event.</p>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <label style="font-size: 13px; font-weight: 600;">Event Title <input type="text" id="galTitleInput" placeholder="e.g. Priya & Karthik Wedding Gallery"></label>
+        <label style="font-size: 13px; font-weight: 600;">Event Date <input type="text" placeholder="22 Jan 2027"></label>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-ghost" onclick="closeModal('createGalleryModal')">Cancel</button>
+        <button type="button" class="btn-gold" onclick="submitCreateGallery()">Initialize Gallery</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="js/helpers.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderShell({
+        active: 'photo-sharing',
+        searchPlaceholder: 'Search galleries...',
+        actions: [
+          { label: 'Create gallery', variant: 'gold', onclick: "openModal('createGalleryModal')", icon: 'ti-photo-plus' }
+        ]
+      });
+
+      renderGalleriesTable();
+    });
+
+    function switchPhotoTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+
+      document.getElementById('tabSetup').style.display = (tabId === 'setup' ? 'block' : 'none');
+      document.getElementById('tabGuest').style.display = (tabId === 'guest' ? 'block' : 'none');
+      document.getElementById('tabReport').style.display = (tabId === 'report' ? 'block' : 'none');
+    }
+
+    function renderGalleriesTable() {
+      var tbody = document.getElementById('galleriesTableBody');
+      if (!tbody || !MOCK_DATA.galleriesList) return;
+
+      tbody.innerHTML = MOCK_DATA.galleriesList.map(function(g) {
+        return '<tr>' +
+          '<td style="font-weight: 600;">' + g.title + '</td>' +
+          '<td>' + g.date + '</td>' +
+          '<td>' + g.photoCount + ' Photos</td>' +
+          '<td>' + g.storage + '</td>' +
+          '<td><span class="badge badge-' + g.kind + '">' + g.status + '</span></td>' +
+          '<td><button type="button" class="lnk" onclick="toast(\'Managing ' + g.title + '\')">Manage</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function submitCreateGallery() {
+      var title = document.getElementById('galTitleInput').value.trim();
+      if (!title) title = 'New Event Gallery';
+      closeModal('createGalleryModal');
+      toast('Gallery ' + title + ' created');
+    }
+  </script>
+</body>
+</html>

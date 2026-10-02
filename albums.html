@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Albums | Studio Console</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Authentication Guard -->
+  <script src="js/auth.js"></script>
+  <script>requireAuth();</script>
+</head>
+<body>
+
+  <div class="app-shell">
+    
+    <!-- Floating Card Sidebar Column -->
+    <aside class="sidebar-column" id="sidebarCol">
+      <div class="side">
+        <div class="side-brand">
+          <div class="side-brand-icon"><i class="ti ti-camera"></i></div>
+          <span class="side-brand-name">Studio Console</span>
+        </div>
+        <nav class="side-nav" id="sidebar-nav" aria-label="Main Navigation"></nav>
+        <div class="side-user">
+          <div class="side-user-info">
+            <div class="side-user-avatar">S</div>
+            <div>
+              <div style="font-weight: 600; font-size: 13px;">Sana</div>
+              <div style="font-size: 11px; color: var(--muted);">Owner</div>
+            </div>
+          </div>
+          <button type="button" class="lnk" onclick="logout()" title="Sign Out" style="color: var(--error);">
+            <i class="ti ti-logout" style="font-size: 18px;"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Body -->
+    <main class="app-main">
+      
+      <!-- Topbar Header -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button type="button" class="menu-drawer-toggle" onclick="toggleDrawer()" aria-label="Toggle Navigation">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          <div class="topbar-search" id="topbarSearch">
+            <i class="ti ti-search"></i>
+            <input type="text" placeholder="Search albums..." aria-label="Search">
+          </div>
+        </div>
+        <div class="topbar-actions" id="topbarActions"></div>
+      </header>
+
+      <!-- Main Albums View -->
+      <div id="main-content">
+        <div style="margin-bottom: 20px;">
+          <h1>Album Design & Spreads</h1>
+          <p style="color: var(--muted); font-size: 14px; margin-top: 4px;">AI layout generation, spread proofing, and printing pipelines.</p>
+        </div>
+
+        <!-- Status Pipeline Summary Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px;">
+          <div class="glass-panel" style="padding: 14px; text-align: center;">
+            <div style="font-size: 12px; color: var(--muted);">1. Selecting</div>
+            <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600;">1 Album</div>
+          </div>
+          <div class="glass-panel" style="padding: 14px; text-align: center;">
+            <div style="font-size: 12px; color: var(--muted);">2. Designing</div>
+            <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600;">1 Album</div>
+          </div>
+          <div class="glass-panel" style="padding: 14px; text-align: center;">
+            <div style="font-size: 12px; color: var(--muted);">3. Client Review</div>
+            <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600; color: var(--gold);">1 Album</div>
+          </div>
+          <div class="glass-panel" style="padding: 14px; text-align: center;">
+            <div style="font-size: 12px; color: var(--muted);">4. Approved</div>
+            <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600; color: var(--success);">1 Album</div>
+          </div>
+          <div class="glass-panel" style="padding: 14px; text-align: center;">
+            <div style="font-size: 12px; color: var(--muted);">5. Printing</div>
+            <div style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600;">1 Album</div>
+          </div>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="chip-group" id="albumFilterChips">
+          <button type="button" class="chip active" onclick="filterAlbums('all', this)">All Albums (5)</button>
+          <button type="button" class="chip" onclick="filterAlbums('Selecting', this)">Selecting</button>
+          <button type="button" class="chip" onclick="filterAlbums('Designing', this)">Designing</button>
+          <button type="button" class="chip" onclick="filterAlbums('Client review', this)">Client Review</button>
+          <button type="button" class="chip" onclick="filterAlbums('Approved', this)">Approved</button>
+          <button type="button" class="chip" onclick="filterAlbums('Printing', this)">Printing</button>
+        </div>
+
+        <!-- Albums Auto-Fit Cards Grid -->
+        <div class="grid-auto-fit" id="albumsGridContainer"></div>
+
+        <!-- Extra State Container -->
+        <div id="albumStateContainer"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- New Album Modal -->
+  <div class="modal-overlay" id="newAlbumModal" onclick="if(event.target===this)closeModal('newAlbumModal')">
+    <div class="glass-card modal-card">
+      <h2 style="margin-bottom: 6px;">New Album Layout</h2>
+      <p style="color: var(--muted); font-size: 13px; margin: 0 0 18px 0;">Initialize a new album spread project.</p>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <label style="font-size: 13px; font-weight: 600;">Album Title <input type="text" id="albumTitleInput" placeholder="e.g. Priya & Karthik Traditional Album"></label>
+        <label style="font-size: 13px; font-weight: 600;">Client Name <input type="text" placeholder="e.g. Priya & Karthik"></label>
+        <label style="font-size: 13px; font-weight: 600;">Target Spreads Count <input type="text" value="30"></label>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-ghost" onclick="closeModal('newAlbumModal')">Cancel</button>
+        <button type="button" class="btn-gold" onclick="submitNewAlbum()">Create Album</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="js/helpers.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderShell({
+        active: 'albums',
+        searchPlaceholder: 'Search albums...',
+        actions: [
+          { label: 'New album', variant: 'gold', onclick: "openModal('newAlbumModal')", icon: 'ti-book-upload' }
+        ]
+      });
+
+      renderAlbumsGrid('all');
+    });
+
+    function renderAlbumsGrid(filter) {
+      var container = document.getElementById('albumsGridContainer');
+      if (!container || !MOCK_DATA.albumsList) return;
+
+      var filtered = MOCK_DATA.albumsList.filter(function(a) {
+        if (filter === 'all') return true;
+        return a.status === filter;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        document.getElementById('albumStateContainer').innerHTML = renderEmptyState('No albums found', 'Try selecting a different pipeline status chip above.', 'ti-book-off');
+        return;
+      }
+
+      document.getElementById('albumStateContainer').innerHTML = '';
+
+      container.innerHTML = filtered.map(function(alb) {
+        return '<div class="glass-card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">' +
+          '<div>' +
+            '<div class="album-card-photo" style="background: ' + alb.coverGradient + '; position: relative;">' +
+              '<span class="badge badge-' + alb.statusKind + '" style="position: absolute; top: 10px; right: 10px;">' + alb.status + '</span>' +
+            '</div>' +
+            '<h3 style="font-size: 1.2rem; margin-bottom: 4px;">' + alb.title + '</h3>' +
+            '<div style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">Client: ' + alb.client + '</div>' +
+          '</div>' +
+
+          '<div>' +
+            '<div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">' +
+              '<span>Progress</span>' +
+              '<strong>' + alb.spreads + ' spreads (' + alb.progress + '%)</strong>' +
+            '</div>' +
+            '<div style="width: 100%; height: 6px; background: rgba(20,23,31,0.08); border-radius: 999px; overflow: hidden; margin-bottom: 14px;">' +
+              '<div style="width: ' + alb.progress + '%; height: 100%; background: var(--gold);"></div>' +
+            '</div>' +
+            '<button type="button" class="btn-ghost" style="width: 100%; font-size: 13px;" onclick="toast(\'Opening spread editor for ' + alb.title + '\')">' +
+              '<i class="ti ti-edit"></i> Spread Editor' +
+            '</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function filterAlbums(filter, btn) {
+      var chips = document.querySelectorAll('#albumFilterChips .chip');
+      chips.forEach(function(c) { c.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+      renderAlbumsGrid(filter);
+    }
+
+    function submitNewAlbum() {
+      var title = document.getElementById('albumTitleInput').value.trim();
+      if (!title) title = 'New Album Spread Project';
+      closeModal('newAlbumModal');
+      toast('Album ' + title + ' created');
+    }
+  </script>
+</body>
+</html>

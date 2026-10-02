@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Photography | Studio Console</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+  <!-- Shared Theme Stylesheet -->
+  <link rel="stylesheet" href="css/theme.css">
+
+  <style>
+    body {
+      padding: 24px 16px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .booking-card {
+      background: rgba(255, 252, 246, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-radius: 22px;
+      padding: 32px;
+      box-shadow: 0 30px 60px -20px rgba(20, 23, 31, 0.15);
+    }
+    .pkg-choice-card {
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      background: #FFF;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .pkg-choice-card:hover, .pkg-choice-card.active {
+      border-color: var(--gold);
+      box-shadow: 0 6px 16px rgba(212, 168, 87, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="booking-card">
+    
+    <!-- Public Header -->
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 24px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 22px;">
+          <i class="ti ti-camera"></i>
+        </div>
+        <div>
+          <h1 style="font-size: 1.8rem; margin: 0;">Studio Console Photography</h1>
+          <div style="font-size: 13px; color: var(--muted);" id="studioSub">Client Event Booking & Reserve Portal</div>
+        </div>
+      </div>
+      <a href="packages-pay.html#bookings" class="btn-ghost" style="font-size: 13px;">
+        <i class="ti ti-arrow-left"></i> Back to Console
+      </a>
+    </div>
+
+    <!-- Booking Form Container -->
+    <div id="bookingFormSection">
+      
+      <!-- STEP 1: CLIENT DETAILS -->
+      <h2 style="font-size: 1.4rem; margin-bottom: 14px;">1. Your Contact & Event Details</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 28px;">
+        <div>
+          <label style="font-size: 13px; font-weight: 600;">Client Full Name *</label>
+          <input type="text" id="clientName" placeholder="e.g. Siddharth & Rashmi" value="Siddharth & Rashmi">
+        </div>
+        <div>
+          <label style="font-size: 13px; font-weight: 600;">Phone Number *</label>
+          <input type="text" id="clientPhone" placeholder="+91 98765 11223" value="+91 98765 11223">
+        </div>
+        <div>
+          <label style="font-size: 13px; font-weight: 600;">Email Address *</label>
+          <input type="email" id="clientEmail" placeholder="siddharth@gmail.com" value="siddharth@gmail.com">
+        </div>
+        <div>
+          <label style="font-size: 13px; font-weight: 600;">Event Date *</label>
+          <input type="date" id="eventDate" value="2026-12-15">
+        </div>
+        <div style="grid-column: 1 / -1;">
+          <label style="font-size: 13px; font-weight: 600;">Venue & Location Address</label>
+          <input type="text" id="eventLocation" placeholder="e.g. Taj Connemara, Binny Rd, Chennai" value="Taj Connemara, Binny Rd, Chennai">
+        </div>
+      </div>
+
+      <!-- STEP 2: SELECT ACTIVE PACKAGE (Hidden packages excluded!) -->
+      <h2 style="font-size: 1.4rem; margin-bottom: 6px;">2. Select Photography Package</h2>
+      <p style="font-size: 13px; color: var(--muted); margin: 0 0 14px 0;">Only active available packages are displayed below.</p>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-bottom: 28px;" id="activePackagesContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- STEP 3: PRICE SUMMARY & PAYMENT -->
+      <div class="glass-panel" style="padding: 20px; margin-bottom: 24px;">
+        <h3 style="font-size: 1.3rem; margin-bottom: 12px;">3. Booking Price & Advance Summary</h3>
+        
+        <div style="font-size: 14px; display: flex; flex-direction: column; gap: 8px;" id="summaryBreakdown">
+          <!-- Dynamically computed -->
+        </div>
+      </div>
+
+      <button type="button" class="btn-gold" style="width: 100%; font-size: 16px; padding: 14px;" onclick="processPublicBooking()">
+        <i class="ti ti-lock"></i> Pay Advance & Reserve Booking
+      </button>
+
+    </div>
+
+    <!-- Success Screen (Hidden by default) -->
+    <div id="bookingSuccessSection" style="display: none; text-align: center; padding: 20px 0;">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--success-bg); color: var(--success); display: inline-flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 16px;">
+        <i class="ti ti-circle-check"></i>
+      </div>
+      <h2 style="font-size: 1.8rem; margin-bottom: 8px;">Booking Confirmed & Advance Paid!</h2>
+      <p style="color: var(--muted); font-size: 14px; max-width: 480px; margin: 0 auto 24px auto;">
+        Thank you! Your advance payment has been received. Your booking has been automatically saved into Studio Console under the Bookings and Payments tabs.
+      </p>
+
+      <div class="glass-panel" style="padding: 16px; max-width: 420px; margin: 0 auto 24px auto; text-align: left; font-size: 13px;" id="receiptSummary"></div>
+
+      <a href="packages-pay.html#bookings" class="btn-gold" style="font-size: 14px; padding: 12px 24px;">
+        View Booking in Studio Console &rarr;
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/mock-data.js"></script>
+  <script>
+    var selectedPackage = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check tenant URL param
+      var urlParams = new URLSearchParams(window.location.search);
+      var tenant = urlParams.get('tenant');
+      if (tenant) {
+        document.getElementById('studioSub').textContent = tenant.toUpperCase() + ' Studio - Client Booking & Reserve Portal';
+      }
+
+      renderActivePackages();
+    });
+
+    function renderActivePackages() {
+      // Fetch ONLY active packages (Rule 4: Hidden packages must NOT appear!)
+      var packages = getPackages(true);
+      var container = document.getElementById('activePackagesContainer');
+      
+      if (!packages || packages.length === 0) {
+        container.innerHTML = '<div style="font-size: 13px; color: var(--muted);">No active packages currently available.</div>';
+        return;
+      }
+
+      // Default selection to first active package
+      selectedPackage = packages[0];
+
+      container.innerHTML = packages.map(function(pkg, idx) {
+        var isActive = (idx === 0);
+        var activeClass = isActive ? ' active' : '';
+        var totalWithTax = Math.round(pkg.price * 1.18);
+        var advAmt = Math.round(totalWithTax * (pkg.advancePercent / 100));
+
+        return '<div class="pkg-choice-card' + activeClass + '" onclick="selectPkgChoice(\'' + pkg.id + '\', this)">' +
+          '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">' +
+            '<strong style="font-size: 15px;">' + pkg.name + '</strong>' +
+            '<span class="badge badge-approved">' + pkg.advancePercent + '% Advance</span>' +
+          '</div>' +
+          '<div style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">' + pkg.eventType + '</div>' +
+          '<div style="font-family: \'Cormorant Garamond\', serif; font-size: 24px; font-weight: 600; color: var(--gold);">' + formatINR(totalWithTax) + ' <span style="font-size: 12px; font-family: Inter; color: var(--muted); font-weight: 400;">(incl. GST)</span></div>' +
+          '<div style="font-size: 12px; color: var(--success); font-weight: 600; margin-top: 4px;">Advance Payable: ' + formatINR(advAmt) + '</div>' +
+        '</div>';
+      }).join('');
+
+      updatePriceSummary();
+    }
+
+    function selectPkgChoice(pkgId, el) {
+      document.querySelectorAll('.pkg-choice-card').forEach(function(c) { c.classList.remove('active'); });
+      if (el) el.classList.add('active');
+
+      var packages = getPackages(true);
+      selectedPackage = packages.find(function(p) { return p.id === pkgId; }) || packages[0];
+      updatePriceSummary();
+    }
+
+    function updatePriceSummary() {
+      if (!selectedPackage) return;
+
+      var basePrice = selectedPackage.price;
+      var gst = Math.round(basePrice * 0.18);
+      var total = basePrice + gst;
+      var adv = Math.round(total * (selectedPackage.advancePercent / 100));
+
+      var summaryEl = document.getElementById('summaryBreakdown');
+      summaryEl.innerHTML = 
+        '<div style="display: flex; justify-content: space-between;"><span>Package Rate (' + selectedPackage.name + '):</span> <span>' + formatINR(basePrice) + '</span></div>' +
+        '<div style="display: flex; justify-content: space-between;"><span>GST 18%:</span> <span>' + formatINR(gst) + '</span></div>' +
+        '<div style="display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 6px; font-weight: 600; font-size: 15px;">' +
+          '<span>Total Estimated Booking Amount:</span> <span>' + formatINR(total) + '</span>' +
+        '</div>' +
+        '<div style="display: flex; justify-content: space-between; color: var(--success); font-weight: 600; font-size: 15px; background: rgba(46,143,100,0.1); padding: 8px; border-radius: 6px;">' +
+          '<span>Advance Deposit Due Today (' + selectedPackage.advancePercent + '%):</span> <span>' + formatINR(adv) + '</span>' +
+        '</div>';
+    }
+
+    function processPublicBooking() {
+      var name = document.getElementById('clientName').value.trim();
+      var phone = document.getElementById('clientPhone').value.trim();
+      var email = document.getElementById('clientEmail').value.trim();
+      var date = document.getElementById('eventDate').value;
+      var location = document.getElementById('eventLocation').value.trim();
+
+      if (!name || !phone) {
+        alert('Please enter your name and phone number.');
+        return;
+      }
+
+      if (!selectedPackage) return;
+
+      var totalWithTax = Math.round(selectedPackage.price * 1.18);
+      var advAmount = Math.round(totalWithTax * (selectedPackage.advancePercent / 100));
+
+      // Save Booking & Payment using helper function
+      var newBkg = savePublicBooking({
+        client: { name: name, phone: phone, email: email, address: location, gstin: '' },
+        event: selectedPackage.eventType + ' (' + name + ')',
+        date: date || '15 Dec 2026',
+        package: {
+          name: selectedPackage.name,
+          hsnSac: '998381',
+          rate: selectedPackage.price,
+          qty: 1,
+          addOns: []
+        },
+        paymentMethod: 'UPI',
+        advanceAmount: advAmount
+      });
+
+      // Show Confirmation Card
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('bookingSuccessSection').style.display = 'block';
+
+      document.getElementById('receiptSummary').innerHTML = 
+        '<div><strong>Booking Ref:</strong> ' + newBkg.id + '</div>' +
+        '<div><strong>Client Name:</strong> ' + name + '</div>' +
+        '<div><strong>Package:</strong> ' + selectedPackage.name + '</div>' +
+        '<div><strong>Advance Paid:</strong> ' + formatINR(advAmount) + ' (UPI/WEB)</div>' +
+        '<div><strong>Date:</strong> ' + date + '</div>';
+    }
+  </script>
+</body>
+</html>

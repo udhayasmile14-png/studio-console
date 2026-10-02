@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation Video | Studio Console</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Authentication Guard -->
+  <script src="js/auth.js"></script>
+  <script>requireAuth();</script>
+
+  <style>
+    /* Video Module Custom Styles */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    
+    .video-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 12px);
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .video-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
+      border-color: var(--gold-accent, #C5A059);
+    }
+
+    .video-card-thumb {
+      height: 160px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .video-card-thumb .play-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(20, 23, 31, 0.65);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .video-card:hover .play-badge {
+      transform: scale(1.1);
+      background: var(--ink, #14171F);
+      color: var(--gold-accent, #C5A059);
+    }
+
+    .video-card-meta {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .video-card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    /* Wizard Progress Bar */
+    .wizard-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      position: relative;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .wizard-step-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .wizard-step-item.active {
+      border-color: var(--gold-accent, #C5A059);
+      background: #FFFDF9;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .wizard-step-item.completed {
+      background: #F4F9F5;
+      color: #2E7D32;
+      border-color: #C8E6C9;
+    }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: justify;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .wizard-step-item.active .step-num {
+      background: var(--ink);
+      color: #FFF;
+    }
+
+    .wizard-step-item.completed .step-num {
+      background: #2E7D32;
+      color: #FFF;
+    }
+
+    /* AI Storyboard Scene Card */
+    .storyboard-timeline {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 12px 4px 20px 4px;
+    }
+
+    .storyboard-scene {
+      min-width: 220px;
+      width: 220px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .storyboard-scene-thumb {
+      height: 110px;
+      border-radius: 6px;
+      display: flex;
+      align-items: flex-end;
+      padding: 8px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      background-size: cover;
+    }
+
+    /* Side Panel Drawer */
+    .side-panel-drawer {
+      position: fixed;
+      top: 0;
+      right: -480px;
+      width: 440px;
+      max-width: 90vw;
+      height: 100vh;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+      z-index: 1000;
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .side-panel-drawer.open {
+      right: 0;
+    }
+
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(2px);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Animated CSS Template Preview */
+    .template-card-thumb {
+      height: 150px;
+      border-radius: 8px 8px 0 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .template-card-thumb::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .template-card:hover .template-card-thumb::after {
+      left: 150%;
+    }
+
+    /* Skeleton Loading State */
+    .skeleton-box {
+      background: linear-gradient(90deg, #EFECE6 25%, #E6E2DA 50%, #EFECE6 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: 6px;
+    }
+
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @media (max-width: 768px) {
+      .wizard-steps {
+        flex-direction: column;
+      }
+      .side-panel-drawer {
+        width: 100vw;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .video-card, .side-panel-drawer, .skeleton-box, .template-card-thumb::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-shell">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar-column" id="sidebarCol">
+      <div class="side">
+        <div class="side-brand">
+          <div class="side-brand-icon"><i class="ti ti-camera"></i></div>
+          <span class="side-brand-name">Studio Console</span>
+        </div>
+        <nav class="side-nav" id="sidebar-nav" aria-label="Main Navigation"></nav>
+        <div class="side-user">
+          <div class="side-user-info">
+            <div class="side-user-avatar">S</div>
+            <div>
+              <div style="font-weight: 600; font-size: 13px;">Sana</div>
+              <div style="font-size: 11px; color: var(--muted);">Owner</div>
+            </div>
+          </div>
+          <button type="button" class="lnk" onclick="logout()" title="Sign Out" style="color: var(--error);">
+            <i class="ti ti-logout" style="font-size: 18px;"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Body -->
+    <main class="app-main">
+      
+      <!-- Topbar Header -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button type="button" class="menu-drawer-toggle" onclick="toggleDrawer()" aria-label="Toggle Navigation">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          <div class="topbar-search" id="topbarSearch">
+            <i class="ti ti-search"></i>
+            <input type="text" id="searchInput" placeholder="Search video projects..." oninput="renderProjectsTab()" aria-label="Search">
+          </div>
+        </div>
+        <div class="topbar-actions" id="topbarActions"></div>
+      </header>
+
+      <!-- Main Workspace Content -->
+      <div id="main-content">
+        
+        <!-- Header & Title -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h1>Animation Video</h1>
+            <p style="color: var(--muted); font-size: 14px; margin-top: 4px;">Turn event photos and clips into cinematic videos with AI.</p>
+          </div>
+        </div>
+
+        <!-- Sub-tabs Header Navigation -->
+        <div class="tabs-header" style="margin-bottom: 20px; border-bottom: 1px solid var(--border); display: flex; gap: 24px; overflow-x: auto;">
+          <a href="#projects" class="tab-link active" id="tab-btn-projects" onclick="switchTab('projects'); return false;">
+            <i class="ti ti-video" style="margin-right: 6px;"></i>Projects
+          </a>
+          <a href="#create" class="tab-link" id="tab-btn-create" onclick="switchTab('create'); return false;">
+            <i class="ti ti-wand" style="margin-right: 6px;"></i>Create Wizard
+          </a>
+          <a href="#templates" class="tab-link" id="tab-btn-templates" onclick="switchTab('templates'); return false;">
+            <i class="ti ti-template" style="margin-right: 6px;"></i>Templates
+          </a>
+          <a href="#queue" class="tab-link" id="tab-btn-queue" onclick="switchTab('queue'); return false;">
+            <i class="ti ti-cpu" style="margin-right: 6px;"></i>Render Queue <span id="queueCountBadge" class="badge" style="background:#E3F2FD; color:#1976D2; margin-left: 6px;">0</span>
+          </a>
+        </div>
+
+        <!-- TAB 1: PROJECTS CONTAINER -->
+        <div id="tab-content-projects">
+          <!-- Summary Cards -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="card" style="padding: 16px;">
+              <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 600;">Total Videos</div>
+              <div style="font-size: 28px; font-weight: 600; font-family: 'Cormorant Garamond', serif; margin-top: 4px;" id="statTotalVideos">0</div>
+            </div>
+            <div class="card" style="padding: 16px;">
+              <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 600;">Rendering Now</div>
+              <div style="font-size: 28px; font-weight: 600; font-family: 'Cormorant Garamond', serif; margin-top: 4px; color: #E65100;" id="statRenderingNow">0</div>
+            </div>
+            <div class="card" style="padding: 16px;">
+              <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 600;">Ready for Review</div>
+              <div style="font-size: 28px; font-weight: 600; font-family: 'Cormorant Garamond', serif; margin-top: 4px; color: #1976D2;" id="statReadyReview">0</div>
+            </div>
+            <div class="card" style="padding: 16px;">
+              <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 600;">Delivered</div>
+              <div style="font-size: 28px; font-weight: 600; font-family: 'Cormorant Garamond', serif; margin-top: 4px; color: #2E7D32;" id="statDelivered">0</div>
+            </div>
+          </div>
+
+          <!-- Controls & Filters Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;" id="statusFilterChips">
+              <!-- Filter Chips JS rendered -->
+            </div>
+            
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select id="typeFilterSelect" onchange="renderProjectsTab()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); font-size: 13px;">
+                <option value="ALL">All Video Types</option>
+                <option value="Wedding highlight reel">Wedding Highlight Reel</option>
+                <option value="Cinematic teaser">Cinematic Teaser</option>
+                <option value="Social reel / short">Social Reel / Short</option>
+                <option value="Photo slideshow">Photo Slideshow</option>
+              </select>
+              
+              <button type="button" class="btn-ghost" id="viewModeToggle" onclick="toggleViewMode()" style="padding: 8px 12px;" title="Toggle Grid/List View">
+                <i class="ti ti-layout-grid" id="viewModeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Projects Container -->
+          <div id="projectsGridContainer" class="video-grid"></div>
+        </div>
+
+        <!-- TAB 2: CREATE WIZARD CONTAINER -->
+        <div id="tab-content-create" style="display: none;">
+          <div class="card" style="padding: 24px;">
+            
+            <!-- Wizard Step Stepper Navigation Header -->
+            <div class="wizard-steps" id="wizardStepsHeader">
+              <div class="wizard-step-item active" onclick="goToWizardStep(1)">
+                <span class="step-num">1</span> <span>Project & Type</span>
+              </div>
+              <div class="wizard-step-item" onclick="goToWizardStep(2)">
+                <span class="step-num">2</span> <span>Media Selection</span>
+              </div>
+              <div class="wizard-step-item" onclick="goToWizardStep(3)">
+                <span class="step-num">3</span> <span>Style & Template</span>
+              </div>
+              <div class="wizard-step-item" onclick="goToWizardStep(4)">
+                <span class="step-num">4</span> <span>Music & Text</span>
+              </div>
+              <div class="wizard-step-item" onclick="goToWizardStep(5)">
+                <span class="step-num">5</span> <span>AI Storyboard</span>
+              </div>
+              <div class="wizard-step-item" onclick="goToWizardStep(6)">
+                <span class="step-num">6</span> <span>Review & Render</span>
+              </div>
+            </div>
+
+            <!-- STEP 1: PROJECT & TYPE -->
+            <div id="wizard-step-1" class="wizard-step-content">
+              <h3 style="margin-bottom: 6px;">Step 1: Select Client & Video Type</h3>
+              <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Link this video to an existing client booking or create a custom project.</p>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Client / Booking Event</label>
+                  <select id="wzClientSelect" onchange="autoFillWizardTitle()" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface);">
+                    <option value="">-- Select Client Booking --</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Video Project Title</label>
+                  <input type="text" id="wzTitleInput" placeholder="e.g. Aarav & Meera Highlights" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface);">
+                </div>
+              </div>
+
+              <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 12px;">Choose Video Type</label>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px;">
+                <div class="card wz-type-card active" onclick="selectWzType(this, 'Wedding highlight reel')" style="padding: 16px; border: 2px solid var(--gold-accent, #C5A059); cursor: pointer;">
+                  <i class="ti ti-movie" style="font-size: 24px; color: var(--gold-accent, #C5A059);"></i>
+                  <div style="font-weight: 600; margin-top: 8px;">Wedding Highlight Reel</div>
+                  <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Cinematic 1-3 min story of the main ceremony & reception.</div>
+                </div>
+                <div class="card wz-type-card" onclick="selectWzType(this, 'Cinematic teaser')" style="padding: 16px; cursor: pointer;">
+                  <i class="ti ti-sparkles" style="font-size: 24px; color: var(--ink);"></i>
+                  <div style="font-weight: 600; margin-top: 8px;">Cinematic Teaser</div>
+                  <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">30s high-energy fast cuts teaser.</div>
+                </div>
+                <div class="card wz-type-card" onclick="selectWzType(this, 'Save-the-date')" style="padding: 16px; cursor: pointer;">
+                  <i class="ti ti-calendar-event" style="font-size: 24px; color: var(--ink);"></i>
+                  <div style="font-weight: 600; margin-top: 8px;">Save-the-Date</div>
+                  <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">15-30s announcement for WhatsApp & Instagram.</div>
+                </div>
+                <div class="card wz-type-card" onclick="selectWzType(this, 'Social reel / short')" style="padding: 16px; cursor: pointer;">
+                  <i class="ti ti-brand-instagram" style="font-size: 24px; color: var(--ink);"></i>
+                  <div style="font-weight: 600; margin-top: 8px;">Social Reel / Short</div>
+                  <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Vertical 9:16 optimized for Instagram Reels.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 2: MEDIA SELECTION -->
+            <div id="wizard-step-2" class="wizard-step-content" style="display: none;">
+              <h3 style="margin-bottom: 6px;">Step 2: Media Selection</h3>
+              <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Pick photos from event gallery or upload raw video clips.</p>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="text" id="wzMediaSearch" placeholder="Search gallery photos..." oninput="filterMediaGrid()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); font-size: 13px;">
+                  <button type="button" class="btn-ghost" onclick="toggleSelectAllMedia()" style="padding: 8px 12px; font-size: 13px;">Select All</button>
+                </div>
+                <button type="button" class="btn-gold" onclick="triggerAIBestShots()" style="padding: 8px 14px; font-size: 13px;">
+                  <i class="ti ti-wand"></i> AI Best Shots (Select Top Quality)
+                </button>
+              </div>
+
+              <!-- Media Gallery Grid -->
+              <div id="wzMediaGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
+                <!-- JS populated photo items with checkmarks and AI score badges -->
+              </div>
+
+              <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px;">Upload Video Clips (Optional)</label>
+                <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; background: #FAF7F2; cursor: pointer;" onclick="simulateClipUpload()">
+                  <i class="ti ti-cloud-upload" style="font-size: 28px; color: var(--gold-accent, #C5A059);"></i>
+                  <div style="font-size: 13px; font-weight: 500; margin-top: 4px;">Drag & Drop video clips here or click to browse</div>
+                  <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Supports .mp4, .mov (up to 4K resolution)</div>
+                </div>
+                <div id="wzClipList" style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;"></div>
+              </div>
+            </div>
+
+            <!-- STEP 3: STYLE & TEMPLATE -->
+            <div id="wizard-step-3" class="wizard-step-content" style="display: none;">
+              <h3 style="margin-bottom: 6px;">Step 3: Style & Template Selection</h3>
+              <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Choose a visual theme template, aspect ratio, and video duration.</p>
+
+              <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 12px;">Select Template</label>
+              <div id="wzTemplateGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <!-- Rendered JS Template cards -->
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Aspect Ratio</label>
+                  <select id="wzAspectRatioSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface);">
+                    <option value="16:9">16:9 Landscape (TV & YouTube)</option>
+                    <option value="9:16">9:16 Vertical (Instagram Reel / Shorts)</option>
+                    <option value="1:1">1:1 Square (Instagram Feed)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Target Duration</label>
+                  <select id="wzDurationSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface);">
+                    <option value="15s">15 Seconds</option>
+                    <option value="30s">30 Seconds</option>
+                    <option value="60s" selected>60 Seconds (1 Min)</option>
+                    <option value="2 min">2 Minutes</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Color Mood</label>
+                  <select id="wzMoodSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface);">
+                    <option value="Romantic">Romantic & Warm Gold</option>
+                    <option value="Traditional">Traditional Royal Heritage</option>
+                    <option value="Energetic">Energetic Party Beats</option>
+                    <option value="Elegant">Elegant Vintage Matte</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 4: MUSIC & TEXT -->
+            <div id="wizard-step-4" class="wizard-step-content" style="display: none;">
+              <h3 style="margin-bottom: 6px;">Step 4: Music & Text Overlays</h3>
+              <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Pick background soundtrack and customize video typography.</p>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label style="font-size: 13px; font-weight: 500;">Background Music Track</label>
+                    <label style="font-size: 12px; color: var(--gold-accent, #C5A059); display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                      <input type="checkbox" id="wzBeatSyncCheck" checked> AI Beat-Sync
+                    </label>
+                  </div>
+                  
+                  <div style="display: flex; flex-direction: column; gap: 10px;" id="wzMusicList">
+                    <div class="card wz-music-item active" onclick="selectMusicTrack(this, 'Royal Shehnai & Strings')" style="padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--gold-accent, #C5A059); cursor: pointer;">
+                      <div>
+                        <div style="font-weight: 600; font-size: 13px;">Royal Shehnai & Strings</div>
+                        <div style="font-size: 11px; color: var(--muted);">Traditional Wedding • 120 BPM</div>
+                      </div>
+                      <button type="button" class="btn-ghost" onclick="event.stopPropagation(); toast('Playing preview audio track...');" style="padding: 4px 8px;" aria-label="Play Track Preview"><i class="ti ti-player-play"></i></button>
+                    </div>
+                    <div class="card wz-music-item" onclick="selectMusicTrack(this, 'Acoustic Love Fusion')" style="padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                      <div>
+                        <div style="font-weight: 600; font-size: 13px;">Acoustic Love Fusion</div>
+                        <div style="font-size: 11px; color: var(--muted);">Romantic Acoustic • 95 BPM</div>
+                      </div>
+                      <button type="button" class="btn-ghost" onclick="event.stopPropagation(); toast('Playing preview audio track...');" style="padding: 4px 8px;" aria-label="Play Track Preview"><i class="ti ti-player-play"></i></button>
+                    </div>
+                    <div class="card wz-music-item" onclick="selectMusicTrack(this, 'Dhol Beats Sangeet Mix')" style="padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                      <div>
+                        <div style="font-weight: 600; font-size: 13px;">Dhol Beats Sangeet Mix</div>
+                        <div style="font-size: 11px; color: var(--muted);">High Energy • 138 BPM</div>
+                      </div>
+                      <button type="button" class="btn-ghost" onclick="event.stopPropagation(); toast('Playing preview audio track...');" style="padding: 4px 8px;" aria-label="Play Track Preview"><i class="ti ti-player-play"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Opening Title</label>
+                  <input type="text" id="wzOpeningTitle" placeholder="The Wedding Story of" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 14px;">
+
+                  <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Couple / Client Names</label>
+                  <input type="text" id="wzCoupleNames" placeholder="Aarav & Meera" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 14px;">
+
+                  <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Event Date & Location</label>
+                  <input type="text" id="wzEventDate" placeholder="14th November 2026 • Chennai" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 14px;">
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                      <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 4px;">Closing Credits</label>
+                      <input type="text" id="wzClosingCredits" placeholder="Captured by Studio Console" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface);">
+                    </div>
+                    <div>
+                      <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 4px;">Text Language</label>
+                      <select id="wzLanguageSelect" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface);">
+                        <option value="English">English</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Tamil">Tamil</option>
+                        <option value="Telugu">Telugu</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 5: AI STORYBOARD -->
+            <div id="wizard-step-5" class="wizard-step-content" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div>
+                  <h3 style="margin-bottom: 4px;">Step 5: AI Storyboard Generation</h3>
+                  <p style="color: var(--muted); font-size: 13px;">AI sequences your photos to match music beats and scene flow.</p>
+                </div>
+                <button type="button" class="btn-gold" id="btnGenerateStoryboard" onclick="generateAIStoryboard()">
+                  <i class="ti ti-sparkles"></i> Generate AI Storyboard
+                </button>
+              </div>
+
+              <!-- Loading State Container -->
+              <div id="storyboardLoading" style="display: none; padding: 40px; text-align: center; background: #FAF7F2; border-radius: 10px; margin-bottom: 20px;">
+                <div class="skeleton-box" style="width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 16px auto;"></div>
+                <div style="font-weight: 600; font-size: 15px;">AI analyzing facial expressions, color profiles & audio beats...</div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">Sequencing 18 selected photos into keyframes</div>
+              </div>
+
+              <!-- Timeline Scene Scroller -->
+              <div id="storyboardContent">
+                <div class="storyboard-timeline" id="storyboardSceneContainer">
+                  <!-- JS Rendered Storyboard Scene cards -->
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 6: REVIEW & RENDER -->
+            <div id="wizard-step-6" class="wizard-step-content" style="display: none;">
+              <h3 style="margin-bottom: 6px;">Step 6: Review & Start Render</h3>
+              <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Review final video specifications and queue for AI rendering.</p>
+
+              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+                <div class="card" style="padding: 20px; background: #FAF7F2;">
+                  <h4 style="margin-bottom: 12px; font-family: 'Cormorant Garamond', serif; font-size: 20px;" id="revProjectTitle">Project Summary</h4>
+                  
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
+                    <div><strong>Video Type:</strong> <span id="revVideoType">Highlight Reel</span></div>
+                    <div><strong>Aspect Ratio:</strong> <span id="revAspectRatio">16:9</span></div>
+                    <div><strong>Duration:</strong> <span id="revDuration">60s</span></div>
+                    <div><strong>Color Mood:</strong> <span id="revMood">Romantic</span></div>
+                    <div><strong>Selected Media:</strong> <span id="revMediaCount">18 Photos</span></div>
+                    <div><strong>Music Track:</strong> <span id="revMusic">Royal Shehnai</span></div>
+                  </div>
+                </div>
+
+                <div class="card" style="padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Render Resolution</label>
+                    <select id="wzResolutionSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 14px;">
+                      <option value="1080p">1080p Full HD (Fast)</option>
+                      <option value="4K" selected>4K Ultra HD (High Quality)</option>
+                      <option value="720p">720p HD (Quick Draft)</option>
+                    </select>
+
+                    <div style="font-size: 12px; color: var(--muted);">Estimated render time: <strong>~3.5 Minutes</strong></div>
+                  </div>
+
+                  <button type="button" class="btn-gold" style="width: 100%; padding: 12px; font-weight: 600; margin-top: 16px;" onclick="submitWizardRender()">
+                    <i class="ti ti-rocket"></i> Start Render & Queue
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Wizard Footer Navigation Buttons -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 16px; margin-top: 20px;">
+              <button type="button" class="btn-ghost" id="wzBtnBack" onclick="prevWizardStep()" style="display: none;">
+                <i class="ti ti-arrow-left"></i> Back
+              </button>
+              <div style="font-size: 12px; color: var(--muted);" id="wzDraftStatus">Draft auto-saved</div>
+              <button type="button" class="btn-gold" id="wzBtnNext" onclick="nextWizardStep()">
+                Next Step <i class="ti ti-arrow-right"></i>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB 3: TEMPLATES CONTAINER -->
+        <div id="tab-content-templates" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; gap: 8px;" id="templateCategoryChips">
+              <button type="button" class="btn-ghost active" onclick="filterTemplates('ALL', this)">All Templates</button>
+              <button type="button" class="btn-ghost" onclick="filterTemplates('Wedding', this)">Wedding</button>
+              <button type="button" class="btn-ghost" onclick="filterTemplates('Teaser & Reels', this)">Teasers & Reels</button>
+              <button type="button" class="btn-ghost" onclick="filterTemplates('Pre-Wedding', this)">Pre-Wedding</button>
+              <button type="button" class="btn-ghost" onclick="filterTemplates('Slideshow', this)">Slideshow</button>
+            </div>
+          </div>
+
+          <div id="templatesGridContainer" class="video-grid">
+            <!-- Rendered JS Templates -->
+          </div>
+        </div>
+
+        <!-- TAB 4: RENDER QUEUE CONTAINER -->
+        <div id="tab-content-queue" style="display: none;">
+          <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 20px; align-items: start;">
+            
+            <div class="card" style="padding: 20px;">
+              <h3 style="margin-bottom: 16px;">Active Render Queue</h3>
+              
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                  <thead>
+                    <tr style="border-bottom: 1px solid var(--border); color: var(--muted); font-size: 12px;">
+                      <th style="padding: 10px;">Project Title</th>
+                      <th style="padding: 10px;">Type</th>
+                      <th style="padding: 10px;">Resolution</th>
+                      <th style="padding: 10px;">Progress</th>
+                      <th style="padding: 10px;">Status</th>
+                      <th style="padding: 10px;">ETA</th>
+                      <th style="padding: 10px; text-align: right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="renderQueueTableBody">
+                    <!-- JS populated render queue jobs -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Render Minute Usage Card -->
+            <div class="card" style="padding: 20px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <i class="ti ti-clock" style="font-size: 24px; color: var(--gold-accent, #C5A059);"></i>
+                <div>
+                  <div style="font-weight: 600; font-size: 14px;">Render Quota</div>
+                  <div style="font-size: 11px; color: var(--muted);">Pro Subscription Plan</div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; margin-bottom: 6px;">
+                  <span>Minutes Used</span>
+                  <span>142 / 300 Mins</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                  <div style="width: 47%; height: 100%; background: var(--gold-accent, #C5A059);"></div>
+                </div>
+              </div>
+
+              <div style="font-size: 12px; color: var(--muted); margin-bottom: 16px;">
+                Resets on 1st of next month. Render fast with dedicated GPU workers.
+              </div>
+
+              <button type="button" class="btn-ghost" onclick="toast('Upgrade plan modal opened.')" style="width: 100%;">
+                Upgrade Quota Limit
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- VIDEO REVIEW & DETAILS SLIDE-OUT SIDE PANEL -->
+  <div class="drawer-overlay" id="sidePanelOverlay" onclick="closeSidePanel()"></div>
+  <aside class="side-panel-drawer" id="sidePanelDrawer">
+    <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="font-size: 18px; font-family: 'Cormorant Garamond', serif;" id="drawerTitle">Video Review</h3>
+      <button type="button" class="btn-ghost" onclick="closeSidePanel()" style="padding: 4px 8px;" aria-label="Close Side Panel"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div style="padding: 20px; overflow-y: auto; flex: 1;" id="drawerBody">
+      <!-- Player Frame Preview -->
+      <div style="width: 100%; height: 200px; border-radius: 8px; background: #14171F; position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 12px; color: #fff; margin-bottom: 20px;" id="playerFrame">
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span class="badge" id="playerStatusBadge" style="background:#E8F5E9; color:#2E7D32;">Ready</span>
+          <span id="playerResolution">1080p • 60s</span>
+        </div>
+        
+        <div style="text-align: center;">
+          <button type="button" id="playerPlayBtn" onclick="togglePlayerSim()" style="width: 50px; height: 50px; border-radius: 50%; background: var(--gold-accent, #C5A059); border: none; color: #fff; font-size: 24px; cursor: pointer;">
+            <i class="ti ti-player-play" id="playerPlayIcon"></i>
+          </button>
+        </div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+            <span id="playerCurrentTime">00:18</span>
+            <span>01:00</span>
+          </div>
+          <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; position: relative;">
+            <div style="width: 30%; height: 100%; background: var(--gold-accent, #C5A059);" id="playerScrubBar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Version Selector & Metadata -->
+      <div style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="font-size: 12px; font-weight: 600; color: var(--muted);">VERSION HISTORY</label>
+          <select id="drawerVersionSelect" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 12px;">
+            <option value="V2">V2 (Current Ready)</option>
+            <option value="V1">V1 (Initial Draft)</option>
+          </select>
+        </div>
+        <div style="font-size: 13px; color: var(--muted);" id="drawerDetailsText"></div>
+      </div>
+
+      <!-- Actions Buttons -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <button type="button" class="btn-gold" id="btnShareReviewLink" onclick="shareClientLink()"><i class="ti ti-share"></i> Share Review Link</button>
+        <button type="button" class="btn-ghost" onclick="reRenderProject()"><i class="ti ti-refresh"></i> Re-render V3</button>
+        <button type="button" class="btn-ghost" onclick="toast('Downloading video file...')"><i class="ti ti-download"></i> Download MP4</button>
+        <button type="button" class="btn-ghost" id="btnDeliverProject" onclick="markProjectDelivered()"><i class="ti ti-check"></i> Mark Delivered</button>
+      </div>
+
+      <!-- Client Feedback Comments Section -->
+      <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+        <h4 style="font-size: 14px; margin-bottom: 12px;">Client Feedback Comments</h4>
+        <div id="drawerCommentsList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;"></div>
+        
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="newCommentInput" placeholder="Add feedback note..." style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px;">
+          <button type="button" class="btn-gold" onclick="addClientComment()" style="padding: 8px 12px; font-size: 12px;">Post</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Application Shell Controller -->
+  <script src="js/app.js"></script>
+  <script src="js/mock-data.js"></script>
+
+  <script>
+    /* ==========================================
+       ANIMATION VIDEO PAGE CONTROLLER
+       ========================================== */
+
+    var currentTab = 'projects';
+    var activeFilterStatus = 'ALL';
+    var activeViewMode = 'grid';
+    var wizardCurrentStep = 1;
+    var currentEditingProjId = null;
+
+    // Wizard draft object
+    var wizardDraft = {
+      clientId: '',
+      title: '',
+      type: 'Wedding highlight reel',
+      selectedPhotos: [1, 2, 4, 5, 8],
+      templateId: 'tmpl-1',
+      aspectRatio: '16:9',
+      duration: '60s',
+      mood: 'Romantic',
+      music: 'Royal Shehnai & Strings',
+      beatSync: true,
+      openingTitle: 'The Wedding Story of',
+      coupleNames: 'Aarav & Meera',
+      eventDate: '14th November 2026',
+      closingCredits: 'Studio Console Photography',
+      language: 'English',
+      storyboard: []
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1. Render Navigation Shell
+      renderShell({
+        active: 'animation-video',
+        title: 'Animation Video',
+        searchPlaceholder: 'Search video projects...',
+        actions: [
+          { label: 'New video', icon: 'ti-plus', onclick: 'switchTab("create")' }
+        ]
+      });
+
+      // 2. Parse URL Hash for Sub-tab
+      var initialHash = location.hash.replace('#', '');
+      if (['projects', 'create', 'templates', 'queue'].includes(initialHash)) {
+        switchTab(initialHash);
+      } else {
+        switchTab('projects');
+      }
+
+      window.addEventListener('hashchange', function() {
+        var h = location.hash.replace('#', '');
+        if (['projects', 'create', 'templates', 'queue'].includes(h)) {
+          switchTab(h);
+        }
+      });
+
+      // 3. Populate Initial Dropdowns & Media
+      populateWizardClientOptions();
+      populateWizardMediaGrid();
+      renderTemplatesTab();
+      
+      // 4. Start Render Queue Mock Timer
+      startRenderQueueTimer();
+    });
+
+    /* TAB SWITCHING & URL HASH SYNC */
+    function switchTab(tabId) {
+      currentTab = tabId;
+      location.hash = '#' + tabId;
+
+      ['projects', 'create', 'templates', 'queue'].forEach(function(t) {
+        var btn = document.getElementById('tab-btn-' + t);
+        var content = document.getElementById('tab-content-' + t);
+        if (btn) btn.classList.toggle('active', t === tabId);
+        if (content) content.style.display = (t === tabId ? 'block' : 'none');
+      });
+
+      if (tabId === 'projects') renderProjectsTab();
+      if (tabId === 'templates') renderTemplatesTab();
+      if (tabId === 'queue') renderQueueTab();
+    }
+
+    /* PROJECTS TAB RENDERER */
+    function renderProjectsTab() {
+      var projects = getVideoProjects();
+      var searchQ = (document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '');
+      var typeVal = document.getElementById('typeFilterSelect') ? document.getElementById('typeFilterSelect').value : 'ALL';
+
+      // Update Summary Stats
+      document.getElementById('statTotalVideos').innerText = projects.length;
+      document.getElementById('statRenderingNow').innerText = projects.filter(function(p){ return p.status === 'Rendering' || p.status === 'Queued'; }).length;
+      document.getElementById('statReadyReview').innerText = projects.filter(function(p){ return p.status === 'Ready'; }).length;
+      document.getElementById('statDelivered').innerText = projects.filter(function(p){ return p.status === 'Delivered'; }).length;
+
+      // Render Filter Chips
+      var statuses = ['ALL', 'Draft', 'Queued', 'Rendering', 'Ready', 'Approved', 'Delivered', 'Failed'];
+      var chipsHtml = statuses.map(function(st) {
+        var activeClass = (activeFilterStatus === st ? ' active' : '');
+        return '<button type="button" class="btn-ghost' + activeClass + '" onclick="setFilterStatus(\'' + st + '\')">' + st + '</button>';
+      }).join('');
+      document.getElementById('statusFilterChips').innerHTML = chipsHtml;
+
+      // Filter Projects
+      var filtered = projects.filter(function(p) {
+        var matchStatus = (activeFilterStatus === 'ALL' || p.status === activeFilterStatus);
+        var matchType = (typeVal === 'ALL' || p.type === typeVal);
+        var matchSearch = (!searchQ || p.title.toLowerCase().includes(searchQ) || p.client.toLowerCase().includes(searchQ));
+        return matchStatus && matchType && matchSearch;
+      });
+
+      var container = document.getElementById('projectsGridContainer');
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);"><i class="ti ti-video-off" style="font-size: 32px;"></i><p style="margin-top:8px;">No video projects found matching criteria.</p></div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(function(p) {
+        var badgeStyle = getStatusBadgeStyle(p.status);
+        
+        return '<div class="video-card" onclick="openProjectSidePanel(\'' + p.id + '\')">' +
+          '<div class="video-card-thumb" style="background: ' + p.gradientBg + ';">' +
+            '<div class="play-badge"><i class="ti ti-player-play-filled"></i></div>' +
+            '<div class="video-card-meta">' + p.duration + ' • ' + p.aspectRatio + '</div>' +
+          '</div>' +
+          '<div class="video-card-body">' +
+            '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">' +
+              '<div style="font-weight: 600; font-size: 14px; line-height: 1.3;">' + p.title + '</div>' +
+              '<span class="badge" style="' + badgeStyle + '; flex-shrink: 0; margin-left: 8px;">' + p.status + '</span>' +
+            '</div>' +
+            '<div style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">' + p.client + ' • ' + p.type + '</div>' +
+            '<div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 10px;">' +
+              '<span>Template: ' + p.templateName + '</span>' +
+              '<span>Updated ' + p.lastUpdated + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function setFilterStatus(st) {
+      activeFilterStatus = st;
+      renderProjectsTab();
+    }
+
+    function toggleViewMode() {
+      activeViewMode = (activeViewMode === 'grid' ? 'list' : 'grid');
+      var icon = document.getElementById('viewModeIcon');
+      var container = document.getElementById('projectsGridContainer');
+      if (activeViewMode === 'list') {
+        icon.className = 'ti ti-list';
+        container.style.gridTemplateColumns = '1fr';
+      } else {
+        icon.className = 'ti ti-layout-grid';
+        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+      }
+    }
+
+    function getStatusBadgeStyle(st) {
+      switch(st) {
+        case 'Ready': return 'background:#E3F2FD; color:#1976D2;';
+        case 'Approved': return 'background:#E8F5E9; color:#2E7D32;';
+        case 'Delivered': return 'background:#E8F5E9; color:#1B5E20;';
+        case 'Rendering': return 'background:#FFF3E0; color:#E65100;';
+        case 'Queued': return 'background:#EDE7F6; color:#512DA8;';
+        case 'Failed': return 'background:#FFEBEE; color:#C62828;';
+        default: return 'background:#F5F5F5; color:#616161;';
+      }
+    }
+
+    /* SIDE PANEL DRAWER CONTROLLER */
+    function openProjectSidePanel(projId) {
+      var proj = getVideoProject(projId);
+      if (!proj) return;
+      currentEditingProjId = projId;
+
+      document.getElementById('drawerTitle').innerText = proj.title;
+      document.getElementById('playerStatusBadge').innerText = proj.status;
+      document.getElementById('playerStatusBadge').style = getStatusBadgeStyle(proj.status);
+      document.getElementById('playerResolution').innerText = (proj.aspectRatio + ' • ' + proj.duration);
+      document.getElementById('playerFrame').style.background = proj.gradientBg;
+      
+      document.getElementById('drawerDetailsText').innerHTML = 
+        '<strong>Client:</strong> ' + proj.client + '<br>' +
+        '<strong>Type:</strong> ' + proj.type + '<br>' +
+        '<strong>Template:</strong> ' + proj.templateName + ' (' + proj.mood + ')';
+
+      // Comments List
+      renderDrawerComments(proj.comments);
+
+      document.getElementById('sidePanelOverlay').classList.add('open');
+      document.getElementById('sidePanelDrawer').classList.add('open');
+    }
+
+    function closeSidePanel() {
+      document.getElementById('sidePanelOverlay').classList.remove('open');
+      document.getElementById('sidePanelDrawer').classList.remove('open');
+    }
+
+    function renderDrawerComments(comments) {
+      var container = document.getElementById('drawerCommentsList');
+      if (!comments || comments.length === 0) {
+        container.innerHTML = '<div style="font-size: 12px; color: var(--muted); font-style: italic;">No feedback comments yet.</div>';
+        return;
+      }
+      container.innerHTML = comments.map(function(c) {
+        return '<div style="background:#FAF7F2; padding: 10px; border-radius: 6px; font-size: 12px;">' +
+          '<div style="display:flex; justify-content:space-between; font-weight:600; margin-bottom:4px;">' +
+            '<span>' + c.author + '</span>' +
+            '<span style="color:var(--muted); font-size:11px;">' + c.time + '</span>' +
+          '</div>' +
+          '<div>' + c.text + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function addClientComment() {
+      var input = document.getElementById('newCommentInput');
+      if (!input || !input.value.trim() || !currentEditingProjId) return;
+      
+      var proj = getVideoProject(currentEditingProjId);
+      if (proj) {
+        proj.comments.push({
+          author: 'Sana (Studio)',
+          time: 'Just now',
+          text: input.value.trim()
+        });
+        updateVideoProject(currentEditingProjId, { comments: proj.comments });
+        renderDrawerComments(proj.comments);
+        input.value = '';
+        toast('Comment added');
+      }
+    }
+
+    function shareClientLink() {
+      if (!currentEditingProjId) return;
+      var link = window.location.origin + '/review?vid=' + currentEditingProjId;
+      navigator.clipboard.writeText(link);
+      toast('Client review link copied to clipboard!');
+    }
+
+    function markProjectDelivered() {
+      if (!currentEditingProjId) return;
+      updateVideoProject(currentEditingProjId, { status: 'Delivered' });
+      document.getElementById('playerStatusBadge').innerText = 'Delivered';
+      document.getElementById('playerStatusBadge').style = getStatusBadgeStyle('Delivered');
+      toast('Project marked as Delivered!');
+      renderProjectsTab();
+    }
+
+    function reRenderProject() {
+      if (!currentEditingProjId) return;
+      var proj = getVideoProject(currentEditingProjId);
+      var queue = getRenderQueue();
+      queue.unshift({
+        id: 'job-' + Date.now(),
+        projectId: proj.id,
+        projectTitle: proj.title + ' (V3)',
+        type: proj.type,
+        resolution: '1080p',
+        progress: 0,
+        status: 'Queued',
+        started: 'Just now',
+        eta: '3 mins left'
+      });
+      saveRenderQueue(queue);
+      updateVideoProject(currentEditingProjId, { status: 'Queued' });
+      closeSidePanel();
+      switchTab('queue');
+      toast('Re-render job added to queue!');
+    }
+
+    function togglePlayerSim() {
+      var icon = document.getElementById('playerPlayIcon');
+      if (icon.className.includes('play')) {
+        icon.className = 'ti ti-player-pause';
+        toast('Playing video preview...');
+      } else {
+        icon.className = 'ti ti-player-play';
+      }
+    }
+
+    /* WIZARD STEP CONTROLLER */
+    function goToWizardStep(stepNum) {
+      wizardCurrentStep = stepNum;
+      
+      // Update Stepper Navigation
+      var stepItems = document.querySelectorAll('.wizard-step-item');
+      stepItems.forEach(function(item, idx) {
+        var s = idx + 1;
+        item.classList.toggle('active', s === stepNum);
+        item.classList.toggle('completed', s < stepNum);
+      });
+
+      // Show step content
+      for (var i = 1; i <= 6; i++) {
+        var el = document.getElementById('wizard-step-' + i);
+        if (el) el.style.display = (i === stepNum ? 'block' : 'none');
+      }
+
+      // Button controls
+      document.getElementById('wzBtnBack').style.display = (stepNum > 1 ? 'block' : 'none');
+      var btnNext = document.getElementById('wzBtnNext');
+      if (stepNum === 6) {
+        btnNext.style.display = 'none';
+        updateWizardSummary();
+      } else {
+        btnNext.style.display = 'block';
+      }
+    }
+
+    function nextWizardStep() {
+      if (wizardCurrentStep < 6) {
+        goToWizardStep(wizardCurrentStep + 1);
+      }
+    }
+
+    function prevWizardStep() {
+      if (wizardCurrentStep > 1) {
+        goToWizardStep(wizardCurrentStep - 1);
+      }
+    }
+
+    function populateWizardClientOptions() {
+      var bookings = getBookings();
+      var select = document.getElementById('wzClientSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Select Client Booking --</option>' + 
+        bookings.map(function(b) {
+          return '<option value="' + b.id + '">' + b.client.name + ' (' + b.event + ')</option>';
+        }).join('');
+    }
+
+    function autoFillWizardTitle() {
+      var bId = document.getElementById('wzClientSelect').value;
+      var bookings = getBookings();
+      var found = bookings.find(function(b) { return b.id === bId; });
+      if (found) {
+        document.getElementById('wzTitleInput').value = found.client.name + ' ' + wizardDraft.type;
+        document.getElementById('wzCoupleNames').value = found.client.name;
+        wizardDraft.title = found.client.name + ' ' + wizardDraft.type;
+      }
+    }
+
+    function selectWzType(el, typeName) {
+      document.querySelectorAll('.wz-type-card').forEach(function(c){
+        c.style.borderColor = 'var(--border)';
+      });
+      el.style.borderColor = 'var(--gold-accent, #C5A059)';
+      wizardDraft.type = typeName;
+    }
+
+    function populateWizardMediaGrid() {
+      var grid = document.getElementById('wzMediaGrid');
+      var gradients = [
+        'linear-gradient(45deg, #FF9A9E, #FECFEF)',
+        'linear-gradient(45deg, #A1C4FD, #C2E9FB)',
+        'linear-gradient(45deg, #FFECD2, #FCB69F)',
+        'linear-gradient(45deg, #D4FC79, #96E6A1)',
+        'linear-gradient(45deg, #8EC5FC, #E0C3FC)',
+        'linear-gradient(45deg, #E0C3FC, #8EC5FC)',
+        'linear-gradient(45deg, #F093FB, #F5576C)',
+        'linear-gradient(45deg, #4FB576, #44C4A1)'
+      ];
+
+      var html = '';
+      for (var i = 1; i <= 12; i++) {
+        var isSelected = wizardDraft.selectedPhotos.includes(i);
+        var bg = gradients[(i - 1) % gradients.length];
+        var isAIBest = (i === 1 || i === 2 || i === 4 || i === 5 || i === 8);
+        var scoreBadge = isAIBest ? '<span style="position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.75); color:#D4AF37; font-size:9px; padding:2px 4px; border-radius:3px;">98% Sharp</span>' : '';
+
+        html += '<div onclick="toggleMediaSelection(' + i + ', this)" style="height: 90px; border-radius: 6px; background:' + bg + '; position: relative; cursor: pointer; border: ' + (isSelected ? '3px solid #14171F' : '1px solid var(--border)') + ';">' +
+          scoreBadge +
+          '<div style="position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; padding: 2px 4px; border-radius: 3px;">IMG_' + String(i).padStart(3, '0') + '</div>' +
+        '</div>';
+      }
+      grid.innerHTML = html;
+    }
+
+    function toggleMediaSelection(id, el) {
+      var idx = wizardDraft.selectedPhotos.indexOf(id);
+      if (idx !== -1) {
+        wizardDraft.selectedPhotos.splice(idx, 1);
+        el.style.border = '1px solid var(--border)';
+      } else {
+        wizardDraft.selectedPhotos.push(id);
+        el.style.border = '3px solid #14171F';
+      }
+    }
+
+    function triggerAIBestShots() {
+      wizardDraft.selectedPhotos = [1, 2, 4, 5, 8];
+      populateWizardMediaGrid();
+      toast('AI Best Shots: Selected top 5 high-clarity photos!');
+    }
+
+    function simulateClipUpload() {
+      var list = document.getElementById('wzClipList');
+      list.innerHTML += '<div style="background: var(--surface); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 12px; display: flex; justify-content: space-between;">' +
+        '<span>CLIP_Drone_Entrance.mp4 (4K, 120MB)</span>' +
+        '<span style="color:#2E7D32;">Uploaded <i class="ti ti-check"></i></span>' +
+      '</div>';
+      toast('Video clip uploaded successfully');
+    }
+
+    function selectMusicTrack(el, trackName) {
+      document.querySelectorAll('.wz-music-item').forEach(function(m){ m.style.borderColor = 'var(--border)'; });
+      el.style.borderColor = 'var(--gold-accent, #C5A059)';
+      wizardDraft.music = trackName;
+    }
+
+    function generateAIStoryboard() {
+      var loading = document.getElementById('storyboardLoading');
+      var container = document.getElementById('storyboardSceneContainer');
+      loading.style.display = 'block';
+
+      setTimeout(function() {
+        loading.style.display = 'none';
+        
+        var scenes = [
+          { id: 1, thumb: 'linear-gradient(45deg, #FF9A9E, #FECFEF)', caption: 'Grand Entrance', dur: '5s', trans: 'Crossfade' },
+          { id: 2, thumb: 'linear-gradient(45deg, #A1C4FD, #C2E9FB)', caption: 'Varmala Exchange', dur: '8s', trans: 'Light Leak' },
+          { id: 3, thumb: 'linear-gradient(45deg, #FFECD2, #FCB69F)', caption: 'Pheras Ritual', dur: '7s', trans: 'Zoom Blur' },
+          { id: 4, thumb: 'linear-gradient(45deg, #D4FC79, #96E6A1)', caption: 'Couple Portraits', dur: '10s', trans: 'Wipe' }
+        ];
+        
+        wizardDraft.storyboard = scenes;
+
+        container.innerHTML = scenes.map(function(s, idx) {
+          return '<div class="storyboard-scene">' +
+            '<div class="storyboard-scene-thumb" style="background: ' + s.thumb + ';">Scene #' + (idx + 1) + '</div>' +
+            '<input type="text" value="' + s.caption + '" style="font-size: 12px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">' +
+            '<div style="display: flex; gap: 6px; font-size: 11px;">' +
+              '<select style="padding: 2px; font-size: 11px;"><option>' + s.trans + '</option><option>Dissolve</option><option>Fade Black</option></select>' +
+              '<input type="text" value="' + s.dur + '" style="width: 40px; padding: 2px; text-align: center;">' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        toast('AI Storyboard generated with 4 scene keyframes!');
+      }, 1200);
+    }
+
+    function updateWizardSummary() {
+      var titleInput = document.getElementById('wzTitleInput');
+      document.getElementById('revProjectTitle').innerText = titleInput.value || 'Untitled Project';
+      document.getElementById('revVideoType').innerText = wizardDraft.type;
+      document.getElementById('revAspectRatio').innerText = document.getElementById('wzAspectRatioSelect').value;
+      document.getElementById('revDuration').innerText = document.getElementById('wzDurationSelect').value;
+      document.getElementById('revMood').innerText = document.getElementById('wzMoodSelect').value;
+      document.getElementById('revMediaCount').innerText = wizardDraft.selectedPhotos.length + ' Photos & 1 Clip';
+      document.getElementById('revMusic').innerText = wizardDraft.music;
+    }
+
+    function submitWizardRender() {
+      var title = document.getElementById('wzTitleInput').value || 'Untitled Video Project';
+      var res = document.getElementById('wzResolutionSelect').value;
+
+      var proj = createVideoProject({
+        title: title,
+        client: document.getElementById('wzCoupleNames').value || 'Client',
+        type: wizardDraft.type,
+        templateName: 'Royal Heritage Wedding',
+        duration: document.getElementById('wzDurationSelect').value,
+        aspectRatio: document.getElementById('wzAspectRatioSelect').value,
+        mood: document.getElementById('wzMoodSelect').value,
+        status: 'Queued'
+      });
+
+      var queue = getRenderQueue();
+      queue.unshift({
+        id: 'job-' + Date.now(),
+        projectId: proj.id,
+        projectTitle: proj.title,
+        type: proj.type,
+        resolution: res,
+        progress: 0,
+        status: 'Queued',
+        started: 'Just now',
+        eta: '3 mins left'
+      });
+      saveRenderQueue(queue);
+
+      toast('Video project created and added to Render Queue!');
+      switchTab('queue');
+    }
+
+    /* TEMPLATES TAB RENDERER */
+    function renderTemplatesTab() {
+      var templates = getTemplates();
+      var container = document.getElementById('templatesGridContainer');
+      if (!container) return;
+
+      container.innerHTML = templates.map(function(t) {
+        return '<div class="video-card template-card">' +
+          '<div class="template-card-thumb" style="background: ' + t.gradient + ';">' +
+            '<span class="badge" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #fff;">' + t.category + '</span>' +
+          '</div>' +
+          '<div class="video-card-body">' +
+            '<div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">' + t.name + '</div>' +
+            '<div style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">' + t.description + '</div>' +
+            '<div style="font-size: 11px; color: var(--muted); margin-bottom: 14px;">' +
+              '<strong>Best for:</strong> ' + t.bestFor + '<br>' +
+              '<strong>Ratios:</strong> ' + t.aspectRatios.join(', ') + ' • ' + t.durationRange +
+            '</div>' +
+            '<button type="button" class="btn-gold" onclick="useTemplateShortcut(\'' + t.id + '\')" style="margin-top: auto; width: 100%;">' +
+              'Use Template' +
+            '</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function filterTemplates(cat, el) {
+      document.querySelectorAll('#templateCategoryChips button').forEach(function(b){ b.classList.remove('active'); });
+      el.classList.add('active');
+      renderTemplatesTab();
+    }
+
+    function useTemplateShortcut(tmplId) {
+      wizardDraft.templateId = tmplId;
+      switchTab('create');
+      goToWizardStep(3);
+      toast('Template loaded into Create Wizard');
+    }
+
+    /* RENDER QUEUE TAB RENDERER */
+    function renderQueueTab() {
+      var queue = getRenderQueue();
+      var tbody = document.getElementById('renderQueueTableBody');
+      var badge = document.getElementById('queueCountBadge');
+      if (badge) badge.innerText = queue.filter(function(q){ return q.status === 'Queued' || q.status === 'Rendering'; }).length;
+
+      if (!tbody) return;
+
+      if (queue.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--muted);">No jobs currently in render queue.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = queue.map(function(q) {
+        var statusBadgeStyle = getStatusBadgeStyle(q.status);
+
+        return '<tr style="border-bottom: 1px solid var(--border);">' +
+          '<td style="padding: 12px; font-weight: 600;">' + q.projectTitle + '</td>' +
+          '<td style="padding: 12px; color: var(--muted);">' + q.type + '</td>' +
+          '<td style="padding: 12px;"><span class="badge" style="background:#F0F0F0; color:#333;">' + q.resolution + '</span></td>' +
+          '<td style="padding: 12px; width: 140px;">' +
+            '<div style="font-size: 11px; margin-bottom: 2px;">' + q.progress + '%</div>' +
+            '<div style="width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">' +
+              '<div style="width: ' + q.progress + '%; height: 100%; background: var(--gold-accent, #C5A059); transition: width 0.4s ease;"></div>' +
+            '</div>' +
+          '</td>' +
+          '<td style="padding: 12px;"><span class="badge" style="' + statusBadgeStyle + '">' + q.status + '</span></td>' +
+          '<td style="padding: 12px; color: var(--muted); font-size: 12px;">' + q.eta + '</td>' +
+          '<td style="padding: 12px; text-align: right;">' +
+            '<button type="button" class="btn-ghost" onclick="cancelRenderJob(\'' + q.id + '\')" style="padding: 4px 8px;" title="Cancel Job"><i class="ti ti-x"></i></button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function cancelRenderJob(jobId) {
+      var queue = getRenderQueue();
+      queue = queue.filter(function(q){ return q.id !== jobId; });
+      saveRenderQueue(queue);
+      renderQueueTab();
+      toast('Render job cancelled');
+    }
+
+    /* SIMULATED MOCK RENDER QUEUE TIMER */
+    function startRenderQueueTimer() {
+      setInterval(function() {
+        var queue = getRenderQueue();
+        var updated = false;
+
+        queue.forEach(function(q) {
+          if (q.status === 'Queued') {
+            q.status = 'Rendering';
+            q.progress = 15;
+            updated = true;
+          } else if (q.status === 'Rendering') {
+            q.progress += 25;
+            if (q.progress >= 100) {
+              q.progress = 100;
+              q.status = 'Ready';
+              q.eta = 'Complete';
+              // Update associated video project status to Ready
+              if (q.projectId) {
+                updateVideoProject(q.projectId, { status: 'Ready' });
+              }
+            }
+            updated = true;
+          }
+        });
+
+        if (updated) {
+          saveRenderQueue(queue);
+          if (currentTab === 'queue') renderQueueTab();
+          if (currentTab === 'projects') renderProjectsTab();
+        }
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

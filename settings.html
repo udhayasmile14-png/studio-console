@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | Studio Console</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Authentication Guard -->
+  <script src="js/auth.js"></script>
+  <script>requireAuth();</script>
+</head>
+<body>
+
+  <div class="app-shell">
+    
+    <!-- Floating Card Sidebar Column -->
+    <aside class="sidebar-column" id="sidebarCol">
+      <div class="side">
+        <div class="side-brand">
+          <div class="side-brand-icon"><i class="ti ti-camera"></i></div>
+          <span class="side-brand-name">Studio Console</span>
+        </div>
+        <nav class="side-nav" id="sidebar-nav" aria-label="Main Navigation"></nav>
+        <div class="side-user">
+          <div class="side-user-info">
+            <div class="side-user-avatar">S</div>
+            <div>
+              <div style="font-weight: 600; font-size: 13px;">Sana</div>
+              <div style="font-size: 11px; color: var(--muted);">Owner</div>
+            </div>
+          </div>
+          <button type="button" class="lnk" onclick="logout()" title="Sign Out" style="color: var(--error);">
+            <i class="ti ti-logout" style="font-size: 18px;"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Body -->
+    <main class="app-main">
+      
+      <!-- Topbar Header (NO Search, NO Actions) -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button type="button" class="menu-drawer-toggle" onclick="toggleDrawer()" aria-label="Toggle Navigation">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          <div class="topbar-search" id="topbarSearch" hidden style="display: none;">
+            <input type="text" aria-label="Search">
+          </div>
+        </div>
+        <div class="topbar-actions" id="topbarActions"></div>
+      </header>
+
+      <!-- Main Settings View -->
+      <div id="main-content">
+        <div style="margin-bottom: 20px;">
+          <h1>Studio Settings</h1>
+          <p style="color: var(--muted); font-size: 14px; margin-top: 4px;">Configure studio profiles, branding, role permissions, and notification channels.</p>
+        </div>
+
+        <!-- Settings Tabs -->
+        <div class="tab-bar">
+          <button type="button" class="tab-btn active" onclick="switchSettingsTab('profile', this)">Studio Profile</button>
+          <button type="button" class="tab-btn" onclick="switchSettingsTab('branding', this)">Branding</button>
+          <button type="button" class="tab-btn" onclick="switchSettingsTab('users', this)">Users & Roles</button>
+          <button type="button" class="tab-btn" onclick="switchSettingsTab('notifications', this)">Notifications</button>
+        </div>
+
+        <!-- TAB 1: STUDIO PROFILE -->
+        <div id="setProfile" class="set-tab">
+          <div class="glass-card" style="padding: 24px; max-width: 680px;">
+            <h3 style="font-size: 1.4rem; margin-bottom: 16px;">Studio Information</h3>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div>
+                <label style="font-size: 13px; font-weight: 600;">Studio / Business Name</label>
+                <input type="text" value="Studio Console Photography">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div>
+                  <label style="font-size: 13px; font-weight: 600;">Owner Name</label>
+                  <input type="text" value="Sana">
+                </div>
+                <div>
+                  <label style="font-size: 13px; font-weight: 600;">Phone Number</label>
+                  <input type="text" value="+91 98765 00000">
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div>
+                  <label style="font-size: 13px; font-weight: 600;">Contact Email</label>
+                  <input type="email" value="sana@studioconsole.in">
+                </div>
+                <div>
+                  <label style="font-size: 13px; font-weight: 600;">GSTIN Number</label>
+                  <input type="text" value="33AAAAA0000A1Z5">
+                </div>
+              </div>
+              <div>
+                <label style="font-size: 13px; font-weight: 600;">Studio Address</label>
+                <input type="text" value="12 Khader Nawaz Khan Rd, Nungambakkam, Chennai">
+              </div>
+              <div>
+                <button type="button" class="btn-gold" onclick="toast('Studio profile saved successfully!')">Save Profile Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: BRANDING -->
+        <div id="setBranding" class="set-tab" style="display: none;">
+          <div class="glass-card" style="padding: 24px; max-width: 680px;">
+            <h3 style="font-size: 1.4rem; margin-bottom: 16px;">Visual Branding & Assets</h3>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div>
+                <label style="font-size: 13px; font-weight: 600;">Studio Logo</label>
+                <div style="display: flex; gap: 16px; align-items: center; margin-top: 6px;">
+                  <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--ink); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    <i class="ti ti-camera"></i>
+                  </div>
+                  <button type="button" class="btn-ghost" onclick="toast('Select logo image file')">Upload New Logo</button>
+                </div>
+              </div>
+              <div>
+                <label style="font-size: 13px; font-weight: 600;">Accent Color Theme</label>
+                <div style="display: flex; gap: 12px; margin-top: 6px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: #D4A857; cursor: pointer; border: 2px solid var(--ink);"></div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: #C9788A; cursor: pointer;"></div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: #2BB3A3; cursor: pointer;"></div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: #8B6CF0; cursor: pointer;"></div>
+                </div>
+              </div>
+              <div>
+                <label style="font-size: 13px; font-weight: 600;">Watermark Text</label>
+                <input type="text" value="© Studio Console 2026">
+              </div>
+              <div>
+                <button type="button" class="btn-gold" onclick="toast('Branding options updated!')">Save Branding Settings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: USERS & ROLES -->
+        <div id="setUsers" class="set-tab" style="display: none;">
+          <div class="glass-card" style="padding: 24px;">
+            <h3 style="font-size: 1.4rem; margin-bottom: 16px;">Role Permissions Matrix</h3>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th>Album Editing</th>
+                    <th>Client Proofing</th>
+                    <th>Billing & Invoices</th>
+                    <th>Team Management</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight: 600;">Studio Owner / Admin</td>
+                    <td><span class="badge badge-approved">Full</span></td>
+                    <td><span class="badge badge-approved">Full</span></td>
+                    <td><span class="badge badge-approved">Full</span></td>
+                    <td><span class="badge badge-approved">Full</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight: 600;">Lead Photographer</td>
+                    <td><span class="badge badge-approved">Full</span></td>
+                    <td><span class="badge badge-approved">Full</span></td>
+                    <td><span class="badge badge-draft">View Only</span></td>
+                    <td><span class="badge badge-draft">No Access</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight: 600;">Album Editor</td>
+                    <td><span class="badge badge-approved">Full</span></td>
+                    <td><span class="badge badge-approved">Full</span></td>
+                    <td><span class="badge badge-draft">No Access</span></td>
+                    <td><span class="badge badge-draft">No Access</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: NOTIFICATIONS -->
+        <div id="setNotifications" class="set-tab" style="display: none;">
+          <div class="glass-card" style="padding: 24px; max-width: 680px;">
+            <h3 style="font-size: 1.4rem; margin-bottom: 16px;">Automated Alerts & Notifications</h3>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 10px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 14px;">WhatsApp Client Alerts</div>
+                  <div style="font-size: 12px; color: var(--muted);">Send automated payment and gallery links via WhatsApp</div>
+                </div>
+                <input type="checkbox" checked style="width: 18px; height: 18px;">
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 10px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 14px;">Email Proofing Reminders</div>
+                  <div style="font-size: 12px; color: var(--muted);">Notify clients when album spreads are ready for review</div>
+                </div>
+                <input type="checkbox" checked style="width: 18px; height: 18px;">
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 10px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 14px;">Weekly Studio Summary</div>
+                  <div style="font-size: 12px; color: var(--muted);">Receive weekly revenue digests every Monday morning</div>
+                </div>
+                <input type="checkbox" checked style="width: 18px; height: 18px;">
+              </div>
+
+              <div>
+                <button type="button" class="btn-gold" onclick="toast('Notification preferences saved!')">Save Preferences</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="js/helpers.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderShell({
+        active: 'settings',
+        searchPlaceholder: null,
+        actions: []
+      });
+    });
+
+    function switchSettingsTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+
+      document.getElementById('setProfile').style.display = (tabId === 'profile' ? 'block' : 'none');
+      document.getElementById('setBranding').style.display = (tabId === 'branding' ? 'block' : 'none');
+      document.getElementById('setUsers').style.display = (tabId === 'users' ? 'block' : 'none');
+      document.getElementById('setNotifications').style.display = (tabId === 'notifications' ? 'block' : 'none');
+    }
+  </script>
+</body>
+</html>

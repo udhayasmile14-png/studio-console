@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clients | Studio Console</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Authentication Guard -->
+  <script src="js/auth.js"></script>
+  <script>requireAuth();</script>
+</head>
+<body>
+
+  <div class="app-shell">
+    
+    <!-- Floating Card Sidebar Column -->
+    <aside class="sidebar-column" id="sidebarCol">
+      <div class="side">
+        <div class="side-brand">
+          <div class="side-brand-icon"><i class="ti ti-camera"></i></div>
+          <span class="side-brand-name">Studio Console</span>
+        </div>
+        <nav class="side-nav" id="sidebar-nav" aria-label="Main Navigation"></nav>
+        <div class="side-user">
+          <div class="side-user-info">
+            <div class="side-user-avatar">S</div>
+            <div>
+              <div style="font-weight: 600; font-size: 13px;">Sana</div>
+              <div style="font-size: 11px; color: var(--muted);">Owner</div>
+            </div>
+          </div>
+          <button type="button" class="lnk" onclick="logout()" title="Sign Out" style="color: var(--error);">
+            <i class="ti ti-logout" style="font-size: 18px;"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Body -->
+    <main class="app-main">
+      
+      <!-- Topbar Header -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button type="button" class="menu-drawer-toggle" onclick="toggleDrawer()" aria-label="Toggle Navigation">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          <div class="topbar-search" id="topbarSearch">
+            <i class="ti ti-search"></i>
+            <input type="text" placeholder="Search clients..." aria-label="Search">
+          </div>
+        </div>
+        <div class="topbar-actions" id="topbarActions"></div>
+      </header>
+
+      <!-- Main Clients Content -->
+      <div id="main-content">
+        <div style="margin-bottom: 20px;">
+          <h1>Clients & Events</h1>
+          <p style="color: var(--muted); font-size: 14px; margin-top: 4px;">Manage client contact profiles, event schedules, and payment balances.</p>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="chip-group" id="filterChips">
+          <button type="button" class="chip active" onclick="filterClients('all', this)">All Clients (6)</button>
+          <button type="button" class="chip" onclick="filterClients('Active', this)">Active Events (3)</button>
+          <button type="button" class="chip" onclick="filterClients('Payment Due', this)">Payment Due (2)</button>
+          <button type="button" class="chip" onclick="filterClients('Completed', this)">Completed (1)</button>
+        </div>
+
+        <!-- Clients Data Table -->
+        <div class="glass-card" style="padding: 20px;">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Client Name</th>
+                  <th>Phone Number</th>
+                  <th>Event Type</th>
+                  <th>Event Date</th>
+                  <th>Location</th>
+                  <th>Outstanding</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="clientsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Skeleton & Empty Container Container -->
+        <div id="extraStateContainer"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Client Detail Side Panel Overlay -->
+  <div class="detail-panel-overlay" id="detailPanelOverlay" onclick="if(event.target===this)closeDetailPanel()">
+    <div class="detail-panel" id="detailPanel">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size: 1.6rem;" id="panelClientName">Client Name</h2>
+          <span class="badge badge-approved" id="panelClientStatus" style="margin-top: 4px;">Active</span>
+        </div>
+        <button type="button" class="btn-ghost" onclick="closeDetailPanel()" style="padding: 6px 10px;">
+          <i class="ti ti-x" style="font-size: 18px;"></i>
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="glass-panel" style="padding: 16px;">
+          <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">Contact Info</div>
+          <div style="font-size: 14px; display: flex; flex-direction: column; gap: 6px;">
+            <div><i class="ti ti-phone" style="color: var(--gold);"></i> <span id="panelPhone">+91 98765 43210</span></div>
+            <div><i class="ti ti-mail" style="color: var(--gold);"></i> <span id="panelEmail">client@example.com</span></div>
+          </div>
+        </div>
+
+        <div class="glass-panel" style="padding: 16px;">
+          <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">Event Details</div>
+          <div style="font-size: 14px; display: flex; flex-direction: column; gap: 6px;">
+            <div><strong>Type:</strong> <span id="panelEvent">Royal Wedding</span></div>
+            <div><strong>Date:</strong> <span id="panelDate">14 Nov 2026</span></div>
+            <div><strong>Location:</strong> <span id="panelLocation">Leela Palace, Chennai</span></div>
+          </div>
+        </div>
+
+        <div class="glass-panel" style="padding: 16px;">
+          <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">Financial Overview</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
+            <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 8px;">
+              <div style="font-size: 11px; color: var(--muted);">Package Total</div>
+              <div style="font-weight: 600; font-size: 16px;" id="panelPackage">₹3,50,000</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 8px;">
+              <div style="font-size: 11px; color: var(--muted);">Outstanding</div>
+              <div style="font-weight: 600; font-size: 16px; color: var(--error);" id="panelOutstanding">₹1,00,000</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button type="button" class="btn-gold" style="flex: 1;" onclick="toast('Opening gallery for client...')">View Gallery</button>
+          <button type="button" class="btn-ghost" style="flex: 1;" onclick="toast('Send invoice reminder sent')">Send Invoice</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Client Modal -->
+  <div class="modal-overlay" id="addClientModal" onclick="if(event.target===this)closeModal('addClientModal')">
+    <div class="glass-card modal-card">
+      <h2 style="margin-bottom: 6px;">Add New Client</h2>
+      <p style="color: var(--muted); font-size: 13px; margin: 0 0 18px 0;">Enter details to create a new client profile.</p>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <label style="font-size: 13px; font-weight: 600;">Client Name <input type="text" id="addClientName" placeholder="e.g. Vikram & Neha"></label>
+        <label style="font-size: 13px; font-weight: 600;">Phone Number <input type="text" id="addClientPhone" placeholder="+91 98765 00000"></label>
+        <label style="font-size: 13px; font-weight: 600;">Event Type <input type="text" id="addClientEvent" placeholder="e.g. Wedding & Reception"></label>
+        <label style="font-size: 13px; font-weight: 600;">Event Date <input type="text" id="addClientDate" placeholder="e.g. 18 Nov 2026"></label>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-ghost" onclick="closeModal('addClientModal')">Cancel</button>
+        <button type="button" class="btn-gold" onclick="submitAddClient()">Save Client</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="js/helpers.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderShell({
+        active: 'clients',
+        searchPlaceholder: 'Search clients...',
+        actions: [
+          { label: 'Add client', variant: 'gold', onclick: "openModal('addClientModal')", icon: 'ti-user-plus' }
+        ]
+      });
+
+      renderClientsTable('all');
+    });
+
+    function renderClientsTable(filter) {
+      var tbody = document.getElementById('clientsTableBody');
+      if (!tbody || !MOCK_DATA.clients) return;
+
+      var filtered = MOCK_DATA.clients.filter(function(c) {
+        if (filter === 'all') return true;
+        return c.status === filter;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        document.getElementById('extraStateContainer').innerHTML = renderEmptyState('No clients found', 'Try selecting a different filter chip above.', 'ti-users-off');
+        return;
+      }
+
+      document.getElementById('extraStateContainer').innerHTML = '';
+
+      tbody.innerHTML = filtered.map(function(c) {
+        var badgeClass = c.status === 'Active' ? 'badge-approved' : (c.status === 'Completed' ? 'badge-paid' : 'badge-draft');
+        return '<tr style="cursor: pointer;" onclick="openDetailPanel(\'' + c.id + '\')">' +
+          '<td style="font-weight: 600;">' + c.name + '</td>' +
+          '<td>' + c.phone + '</td>' +
+          '<td>' + c.eventType + '</td>' +
+          '<td>' + c.date + '</td>' +
+          '<td style="color: var(--muted);">' + c.location + '</td>' +
+          '<td style="font-weight: 600;' + (c.outstanding !== '₹0' ? 'color: var(--error);' : '') + '">' + c.outstanding + '</td>' +
+          '<td><span class="badge ' + badgeClass + '">' + c.status + '</span></td>' +
+          '<td><button type="button" class="lnk" onclick="event.stopPropagation(); openDetailPanel(\'' + c.id + '\')">View</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function filterClients(filter, btn) {
+      var chips = document.querySelectorAll('#filterChips .chip');
+      chips.forEach(function(c) { c.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+      renderClientsTable(filter);
+    }
+
+    function openDetailPanel(id) {
+      var client = MOCK_DATA.clients.find(function(c) { return c.id === id; });
+      if (!client) return;
+
+      document.getElementById('panelClientName').textContent = client.name;
+      document.getElementById('panelClientStatus').textContent = client.status;
+      document.getElementById('panelPhone').textContent = client.phone;
+      document.getElementById('panelEmail').textContent = client.email;
+      document.getElementById('panelEvent').textContent = client.eventType;
+      document.getElementById('panelDate').textContent = client.date;
+      document.getElementById('panelLocation').textContent = client.location;
+      document.getElementById('panelPackage').textContent = client.packageAmount;
+      document.getElementById('panelOutstanding').textContent = client.outstanding;
+
+      document.getElementById('detailPanelOverlay').classList.add('open');
+    }
+
+    function closeDetailPanel() {
+      document.getElementById('detailPanelOverlay').classList.remove('open');
+    }
+
+    function submitAddClient() {
+      var name = document.getElementById('addClientName').value.trim();
+      if (!name) name = 'Vikram & Neha';
+      closeModal('addClientModal');
+      toast('Client ' + name + ' added successfully');
+    }
+  </script>
+</body>
+</html>

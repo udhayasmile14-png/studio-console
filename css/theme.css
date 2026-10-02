@@ -1,0 +1,277 @@
+/* ==========================================================================
+   Studio Console - Shared Design System & Theme Tokens
+   Reference: login.html visual language
+   ========================================================================== */
+
+:root {
+  /* Brand Tokens */
+  --bg: #F6F2EA;
+  --ink: #14171F;
+  --muted: #5B6474;
+  --gold: #D4A857;
+  --gold-hover: #C39A45;
+  --line: #E3DCCD;
+  --card-bg: rgba(255, 252, 246, 0.82);
+  --panel-bg: #FFFFFF;
+  --surface-alt: #F0EAE0;
+  
+  /* Accent Tokens */
+  --accent-blue: #A8C3E0;
+  --accent-green: #A9BFA0;
+  --accent-pink: #D9A5B2;
+  --accent-yellow: #E0B955;
+  --accent-purple: #B9A8E8;
+
+  /* Status Tokens */
+  --success: #2E8F64;
+  --success-bg: #E7F5EE;
+  --error: #D03238;
+  --error-bg: #FDE8E9;
+  --warning: #D9822B;
+  --warning-bg: #FDF3E7;
+
+  /* Layout & Shadows */
+  --radius-card: 22px;
+  --radius-btn: 10px;
+  --shadow-soft: 0 20px 40px -15px rgba(20, 23, 31, 0.07);
+  --shadow-glass: 0 30px 60px -20px rgba(20, 23, 31, 0.12);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.85);
+  
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background: radial-gradient(900px 600px at 28% 55%, #FFF4DC 0, transparent 60%),
+              radial-gradient(700px 500px at 95% 0, #F3E6D2 0, transparent 60%),
+              linear-gradient(160deg, #F9F5EC, #EFE6D6);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Headings */
+h1, h2, h3, h4 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink);
+}
+
+h1 { font-size: 2.2rem; line-height: 1.1; }
+h2 { font-size: 1.6rem; line-height: 1.2; }
+h3 { font-size: 1.3rem; line-height: 1.25; }
+
+/* Translucent Glass Card */
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: var(--glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-glass);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(227, 220, 205, 0.6);
+  border-radius: 14px;
+}
+
+/* Input Fields */
+input[type="text"], input[type="password"], input[type="email"], select, textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-btn);
+  padding: 10px 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(212, 168, 87, 0.22);
+}
+
+/* Buttons */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--gold);
+  border: 1px solid var(--gold-hover);
+  border-radius: var(--radius-btn);
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  text-decoration: none;
+}
+
+.btn-gold:hover {
+  background: var(--gold-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -8px rgba(122, 85, 20, 0.4);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-btn);
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-ghost:hover {
+  background: rgba(20, 23, 31, 0.05);
+  color: var(--ink);
+}
+
+.lnk {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: #7A5514;
+  cursor: pointer;
+  font-weight: 500;
+}
+.lnk:hover { text-decoration: underline; }
+
+/* Status Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.badge-draft { background: var(--warning-bg); color: var(--warning); }
+.badge-approved, .badge-paid { background: var(--success-bg); color: var(--success); }
+.badge-in-review { background: #EBF3FA; color: #2B6CB0; }
+.badge-scheduled { background: #F3E8FF; color: #6B21A8; }
+
+/* Data Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--line);
+}
+
+.data-table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(227, 220, 205, 0.5);
+  color: var(--ink);
+}
+
+.data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 23, 31, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 28px;
+  transform: translateY(20px);
+  transition: transform 0.25s ease;
+}
+
+.modal-overlay.show .modal-card {
+  transform: translateY(0);
+}
+
+/* Toast Notification */
+.toast-msg {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--ink);
+  color: #FFF;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.2,0.8,0.2,1), opacity 0.3s;
+  z-index: 200;
+}
+
+.toast-msg.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Skeleton Loaders */
+.skeleton {
+  background: linear-gradient(90deg, #EFE6D6 25%, #F7F1E5 50%, #EFE6D6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
